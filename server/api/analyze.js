@@ -2,13 +2,24 @@
 // Holds the GROQ_API_KEY server-side so the extension never ships a secret.
 // Returns an Ollama-compatible shape: { response: "<json string>" }.
 
+import { clientIp, rateHit } from "./_lib.js";
+
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const DEFAULT_MODEL = "llama-3.3-70b-versatile";
+
+// Abuse guards for this unauthenticated endpoint.
+const RATE_PER_HOUR = 120; // generous for real users, caps scripted abuse
+const MAX_PROMPT_CHARS = 24000;
+const MAX_TOKENS_CAP = 2048;
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+function clamp(n, lo, hi) {
+  return Math.min(hi, Math.max(lo, n));
 }
 
 export default async function handler(req, res) {
@@ -45,10 +56,22 @@ export default async function handler(req, res) {
     res.status(400).json({ error: "Missing 'prompt' in request body." });
     return;
   }
+  if (prompt.length > MAX_PROMPT_CHARS) {
+    res.status(413).json({ error: "Prompt too large." });
+    return;
+  }
 
-  const temperature = typeof body.temperature === "number" ? body.temperature : 0.2;
-  const maxTokens = typeof body.maxTokens === "number" ? body.maxTokens : 1200;
-  const model = typeof body.model === "string" && body.model ? body.model : DEFAULT_MODEL;
+  // Best-effort per-IP rate limit (fails open if no store configured).
+  const hits = await rateHit(`rl:analyze:${clientIp(req)}`, 3600);
+  if (hits > RATE_PER_HOUR) {
+    res.status(429).json({ error: "Rate limit exceeded. Please try again later." });
+    return;
+  }
+
+  const temperature = clamp(typeof body.temperature === "number" ? body.temperature : 0.2, 0, 1);
+  const maxTokens = clamp(typeof body.maxTokens === "number" ? body.maxTokens : 1200, 1, MAX_TOKENS_CAP);
+  // Pin the model server-side; ignore client-supplied model to prevent abuse.
+  const model = DEFAULT_MODEL;
 
   try {
     const groqRes = await fetch(GROQ_URL, {

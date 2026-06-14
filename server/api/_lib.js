@@ -108,3 +108,32 @@ export async function incrHunterUsed(sub) {
   }
   throw new Error("No credit store configured.");
 }
+
+// Best-effort caller IP from Vercel's forwarding headers.
+export function clientIp(req) {
+  const xff = req.headers["x-forwarded-for"] || "";
+  const first = (Array.isArray(xff) ? xff[0] : xff).split(",")[0].trim();
+  return first || req.socket?.remoteAddress || "unknown";
+}
+
+// Best-effort sliding counter for `key` within `ttlSeconds`. Returns the
+// current count, or 0 if no store is configured (fails open — never blocks
+// legitimate traffic just because the store is down).
+export async function rateHit(key, ttlSeconds) {
+  try {
+    const client = await getRedis();
+    if (client) {
+      const n = await client.incr(key);
+      if (n === 1) await client.expire(key, ttlSeconds);
+      return Number.isFinite(n) ? n : 0;
+    }
+    if (restConfigured()) {
+      const n = parseInt(await restCommand(["incr", key]), 10) || 1;
+      if (n === 1) await restCommand(["expire", key, String(ttlSeconds)]);
+      return n;
+    }
+  } catch {
+    // fail open
+  }
+  return 0;
+}
