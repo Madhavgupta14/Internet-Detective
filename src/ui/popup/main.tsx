@@ -34,18 +34,23 @@ function Popup() {
   const isTemplateInsight = analysis?.status === "complete" && analysis?.insight?.model.toLowerCase().includes("template");
   const displayError = isTemplateInsight ? "" : error || analysis?.error;
 
+  const logoUrl = chrome.runtime.getURL("icons/icon-128.png");
+
   return (
-    <main className="w-[360px] p-4">
-      <header className="mb-4">
-        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-signal">Spectra</div>
-        <h1 className="mt-1 text-xl font-semibold text-ink">Local intelligence</h1>
+    <main className="w-[360px] pb-4">
+      <header className="brand-gradient mb-4 flex items-center gap-2.5 px-4 py-3 text-white shadow-panel">
+        <img alt="Spectra" className="h-9 w-9 shrink-0 rounded-xl bg-white p-1 shadow-soft" src={logoUrl} />
+        <div className="min-w-0">
+          <div className="text-base font-bold leading-tight tracking-tight">Spectra</div>
+          <div className="truncate text-[11px] font-medium text-white/70">LinkedIn intelligence</div>
+        </div>
       </header>
 
-      <div className="space-y-3">
+      <div className="space-y-3 px-4">
         <StatusLine status={busy ? "extracting" : analysis?.status} error={displayError} />
 
         {analysis ? (
-          <div className="rounded-md border border-ink/10 bg-white p-3">
+          <div className="rounded-xl border border-ink/10 bg-white p-3 shadow-soft">
             <div className="truncate text-sm font-medium">{analysis.profile.name || "Latest profile"}</div>
             <div className="mt-1 line-clamp-2 text-xs text-ink/60">{analysis.profile.headline}</div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">

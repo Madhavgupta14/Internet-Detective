@@ -16,14 +16,14 @@ export function Button({
   title?: string;
 }) {
   const classes = {
-    primary: "bg-ink text-white hover:bg-black",
-    secondary: "border border-ink/20 bg-white text-ink hover:bg-ink/5",
+    primary: "brand-gradient text-white shadow-soft hover:brightness-110 hover:shadow-panel",
+    secondary: "border border-ink/15 bg-white text-ink hover:border-brand-400 hover:text-brand-700 hover:bg-brand-50",
     danger: "border border-clay/30 bg-white text-clay hover:bg-clay/5"
   };
 
   return (
     <button
-      className={`inline-flex h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-55 ${classes[variant]}`}
+      className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${classes[variant]}`}
       disabled={disabled}
       onClick={onClick}
       title={title}
@@ -141,9 +141,11 @@ export function ScoreBlock({ label, score }: { label: string; score: ScoreResult
 
 export function EmptyState({ text }: { text: string }) {
   return (
-    <div className="flex min-h-44 flex-col items-center justify-center gap-3 rounded-md border border-dashed border-ink/20 px-5 text-center text-sm text-ink/65">
-      <Brain className="h-6 w-6 text-signal" />
-      <p>{text}</p>
+    <div className="flex min-h-48 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-brand-400/40 bg-white/60 px-6 text-center text-sm text-ink/65 shadow-soft">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl brand-gradient text-white shadow-soft">
+        <Brain className="h-6 w-6" />
+      </div>
+      <p className="max-w-xs leading-6">{text}</p>
     </div>
   );
 }

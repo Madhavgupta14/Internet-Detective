@@ -68,8 +68,8 @@ function ScoreTile({
 
   return (
     <button
-      className={`grid min-h-28 rounded-md border bg-white p-3 text-left transition hover:-translate-y-0.5 hover:shadow-panel ${
-        active ? "border-signal shadow-panel" : "border-ink/10"
+      className={`grid min-h-28 rounded-xl border bg-white p-3 text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-panel ${
+        active ? "border-brand-500 ring-1 ring-brand-500/30 shadow-panel" : "border-ink/10"
       }`}
       onClick={onClick}
       type="button"
@@ -94,7 +94,7 @@ function FocusPanel({ label, score }: { label: FocusKey; score: ScoreResult }) {
   const usefulFactors = score.factors.filter((factor) => factor.impact > 0);
 
   return (
-    <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold">{meta.label}</h2>
@@ -154,15 +154,15 @@ function OutreachPanel({ outreach, selected, onSelect }: { outreach: OutreachSug
   const meta = outreachMeta[selected];
 
   return (
-    <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
       <div className="grid grid-cols-3 gap-2">
         {(Object.keys(outreachMeta) as OutreachKey[]).map((key) => {
           const item = outreachMeta[key];
           const Icon = item.icon;
           return (
             <button
-              className={`flex h-10 items-center justify-center gap-1.5 rounded-md border px-2 text-xs font-semibold transition ${
-                selected === key ? "border-signal bg-signal text-white" : "border-ink/10 bg-paper text-ink/70 hover:border-signal/50"
+              className={`flex h-10 items-center justify-center gap-1.5 rounded-xl border px-2 text-xs font-semibold transition ${
+                selected === key ? "border-transparent brand-gradient text-white shadow-soft" : "border-ink/10 bg-paper text-ink/70 hover:border-brand-400 hover:text-brand-700"
               }`}
               key={key}
               onClick={() => onSelect(key)}
@@ -314,7 +314,7 @@ function ProfileOutreachBuilder({
   }
 
   return (
-    <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold">Profile outreach builder</h2>
@@ -469,7 +469,7 @@ function EmailFinderPanel({
   const noFreeLeft = limited && usesRemaining === 0;
 
   return (
-    <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <AtSign className="h-4 w-4 text-signal" />
@@ -605,25 +605,38 @@ function SidePanel() {
   const isTemplateInsight = analysis?.status === "complete" && analysis?.insight?.model.toLowerCase().includes("template");
   const displayError = isTemplateInsight ? "" : error || analysis?.error;
 
+  const logoUrl = chrome.runtime.getURL("icons/icon-128.png");
+
   return (
-    <main className="min-h-screen bg-paper text-ink">
-      <header className="sticky top-0 z-10 border-b border-ink/10 bg-paper/95 px-4 py-4 backdrop-blur">
-        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-signal">Spectra</div>
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <h1 className="min-w-0 truncate text-lg font-semibold text-ink">LinkedIn intelligence</h1>
-          <Button disabled={busy} onClick={analyze} title="Analyze current tab">
+    <main className="min-h-screen text-ink">
+      <header className="sticky top-0 z-10 brand-gradient px-4 py-4 text-white shadow-panel">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <img alt="Spectra" className="h-9 w-9 shrink-0 rounded-xl bg-white p-1 shadow-soft" src={logoUrl} />
+            <div className="min-w-0">
+              <div className="text-base font-bold leading-tight tracking-tight">Spectra</div>
+              <div className="truncate text-[11px] font-medium text-white/70">LinkedIn intelligence</div>
+            </div>
+          </div>
+          <button
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-3.5 text-sm font-semibold text-brand-700 shadow-soft transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={busy}
+            onClick={analyze}
+            title="Analyze current tab"
+            type="button"
+          >
             {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             Analyze
-          </Button>
+          </button>
         </div>
-        <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-white/10 px-3 py-1.5 text-xs backdrop-blur">
           {signedIn ? (
             <>
-              <span className="min-w-0 truncate text-ink/55">
-                Signed in as <span className="font-medium text-ink/75">{auth?.user?.email}</span>
+              <span className="min-w-0 truncate text-white/80">
+                Signed in as <span className="font-semibold text-white">{auth?.user?.email}</span>
               </span>
               <button
-                className="inline-flex shrink-0 items-center gap-1 rounded-md border border-ink/15 px-2 py-1 text-ink/60 hover:text-ink disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-white/15 px-2 py-1 font-medium text-white hover:bg-white/25 disabled:opacity-50"
                 disabled={authBusy}
                 onClick={signOutUser}
                 type="button"
@@ -634,9 +647,9 @@ function SidePanel() {
             </>
           ) : (
             <>
-              <span className="min-w-0 truncate text-ink/45">Sign in to unlock outreach and email finder</span>
+              <span className="min-w-0 truncate text-white/75">Sign in to unlock outreach &amp; email finder</span>
               <button
-                className="inline-flex shrink-0 items-center gap-1 rounded-md border border-ink/15 px-2 py-1 text-ink/70 hover:text-ink disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-white px-2.5 py-1 font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-50"
                 disabled={authBusy}
                 onClick={signIn}
                 type="button"
@@ -659,9 +672,9 @@ function SidePanel() {
         </div>
       ) : (
         <div className="space-y-4 px-4 pb-8">
-          <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+          <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-signal text-base font-semibold text-white">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-gradient text-base font-semibold text-white shadow-soft">
                 {(analysis.profile.name || "L").slice(0, 1)}
               </div>
               <div className="min-w-0">
@@ -699,7 +712,7 @@ function SidePanel() {
 
           {focusedScore ? <FocusPanel label={focus} score={focusedScore} /> : null}
 
-          <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+          <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
             <h2 className="text-sm font-semibold">Hiring and skills</h2>
             <div className="mt-3 grid gap-4">
               <SignalList
@@ -715,7 +728,7 @@ function SidePanel() {
             </div>
           </section>
 
-          <details className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+          <details className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
               <h2 className="text-sm font-semibold">Insights</h2>
               <ChevronDown className="h-4 w-4 text-ink/45" />

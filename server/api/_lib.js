@@ -1,5 +1,9 @@
 // Shared helpers for Spectra's serverless endpoints:
-// Google access-token verification + Vercel KV (Upstash REST) credit counter.
+// Google access-token verification + Redis-backed per-account credit counter.
+// Works with a Redis connection string (REDIS_URL / KV_URL) or an HTTP REST
+// store (Vercel KV / Upstash REST), whichever the project has configured.
+
+import { createClient } from "redis";
 
 export const FREE_HUNTER_LIMIT = 2;
 
@@ -33,31 +37,74 @@ export async function verifyGoogleToken(token) {
   }
 }
 
-function kvConfigured() {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+// --- Option A: Redis connection string (REDIS_URL / KV_URL) ---
+function redisUrl() {
+  return process.env.REDIS_URL || process.env.KV_URL || "";
 }
 
-async function kvCommand(pathSegments) {
-  const base = process.env.KV_REST_API_URL.replace(/\/+$/, "");
+let redisClientPromise = null;
+async function getRedis() {
+  if (!redisUrl()) return null;
+  if (!redisClientPromise) {
+    const client = createClient({ url: redisUrl() });
+    client.on("error", () => {
+      // Reset so a later call can reconnect.
+      redisClientPromise = null;
+    });
+    redisClientPromise = client.connect().then(() => client);
+  }
+  return redisClientPromise;
+}
+
+// --- Option B: HTTP REST store (Vercel KV / Upstash REST) ---
+function restUrl() {
+  return process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
+}
+
+function restToken() {
+  return process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
+}
+
+function restConfigured() {
+  return Boolean(restUrl() && restToken());
+}
+
+async function restCommand(pathSegments) {
+  const base = restUrl().replace(/\/+$/, "");
   const url = `${base}/${pathSegments.map(encodeURIComponent).join("/")}`;
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
-  });
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${restToken()}` } });
   if (!res.ok) throw new Error(`KV error ${res.status}`);
   const data = await res.json();
   return data.result;
 }
 
 export async function getHunterUsed(sub) {
-  if (!kvConfigured()) throw new Error("KV is not configured.");
-  const raw = await kvCommand(["get", `hunter:${sub}`]);
-  const used = parseInt(raw, 10);
-  return Number.isFinite(used) ? used : 0;
+  const key = `hunter:${sub}`;
+  const client = await getRedis();
+  if (client) {
+    const raw = await client.get(key);
+    const used = parseInt(raw, 10);
+    return Number.isFinite(used) ? used : 0;
+  }
+  if (restConfigured()) {
+    const raw = await restCommand(["get", key]);
+    const used = parseInt(raw, 10);
+    return Number.isFinite(used) ? used : 0;
+  }
+  throw new Error("No credit store configured.");
 }
 
 export async function incrHunterUsed(sub) {
-  if (!kvConfigured()) throw new Error("KV is not configured.");
-  const result = await kvCommand(["incr", `hunter:${sub}`]);
-  const used = parseInt(result, 10);
-  return Number.isFinite(used) ? used : 1;
+  const key = `hunter:${sub}`;
+  const client = await getRedis();
+  if (client) {
+    const used = await client.incr(key);
+    return Number.isFinite(used) ? used : 1;
+  }
+  if (restConfigured()) {
+    const result = await restCommand(["incr", key]);
+    const used = parseInt(result, 10);
+    return Number.isFinite(used) ? used : 1;
+  }
+  throw new Error("No credit store configured.");
 }
