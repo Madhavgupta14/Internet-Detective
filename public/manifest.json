@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "Internet Detective",
-  "description": "Privacy-first AI intelligence powered entirely by local models.",
+  "name": "Spectra",
+  "description": "Turn public LinkedIn profiles into structured intelligence and ready-to-send outreach.",
   "version": "0.1.0",
   "action": {
     "default_popup": "src/ui/popup/index.html",
-    "default_title": "Internet Detective"
+    "default_title": "Spectra"
   },
   "side_panel": {
     "default_path": "src/ui/sidepanel/index.html"
@@ -22,13 +22,21 @@
     }
   ],
   "options_page": "src/ui/options/index.html",
-  "permissions": ["activeTab", "scripting", "sidePanel", "storage", "tabs"],
+  "permissions": ["activeTab", "identity", "scripting", "sidePanel", "storage", "tabs"],
+  "oauth2": {
+    "client_id": "REPLACE_WITH_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile"]
+  },
   "host_permissions": [
     "https://www.linkedin.com/*",
     "http://localhost:11434/*",
-    "http://127.0.0.1:11434/*"
+    "http://127.0.0.1:11434/*",
+    "https://api.hunter.io/*",
+    "https://www.googleapis.com/*",
+    "https://accounts.google.com/*",
+    "https://internet-detective-proxy.vercel.app/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:11434 http://127.0.0.1:11434"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:11434 http://127.0.0.1:11434 https://api.hunter.io https://www.googleapis.com https://accounts.google.com https://internet-detective-proxy.vercel.app"
   }
 }

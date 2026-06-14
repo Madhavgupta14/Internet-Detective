@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS } from "../shared/constants";
+import { DEFAULT_SETTINGS, HOSTED_MODEL } from "../shared/constants";
 import type { AppSettings, LlmInsight, LinkedInProfile, LinkedInScores, LinkedInSignals } from "../shared/types";
 import { buildLinkedInInsightPrompt, buildProfileOutreachPrompt } from "../intelligence/prompts/linkedinPrompts";
 
@@ -11,8 +11,26 @@ type OllamaTagsResponse = {
   models?: Array<{ name: string }>;
 };
 
+type HostedResponse = {
+  response?: string;
+  error?: string;
+  model?: string;
+};
+
 function normalizeBaseUrl(url: string): string {
   return url.replace(/\/+$/, "") || DEFAULT_SETTINGS.ollamaUrl;
+}
+
+function hostedAnalyzeUrl(settings: AppSettings): string {
+  return `${normalizeBaseUrl(settings.apiEndpoint)}/api/analyze`;
+}
+
+function hostedHealthUrl(settings: AppSettings): string {
+  return `${normalizeBaseUrl(settings.apiEndpoint)}/api/health`;
+}
+
+function isHosted(settings: AppSettings): boolean {
+  return settings.backend === "hosted";
 }
 
 async function fetchOllama(url: string, init?: RequestInit): Promise<Response> {
@@ -24,6 +42,100 @@ async function fetchOllama(url: string, init?: RequestInit): Promise<Response> {
     }
     throw error;
   }
+}
+
+// Calls the hosted Groq proxy and returns the raw model text (a JSON string).
+async function generateHosted(
+  prompt: string,
+  settings: AppSettings,
+  options: { temperature: number; maxTokens: number }
+): Promise<string> {
+  let response: Response;
+  try {
+    response = await fetch(hostedAnalyzeUrl(settings), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt,
+        temperature: options.temperature,
+        maxTokens: options.maxTokens,
+        model: HOSTED_MODEL
+      })
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("Cannot reach the analysis service. Check your internet connection or the API endpoint in Settings.");
+    }
+    throw error;
+  }
+
+  if (!response.ok) {
+    let detail = "";
+    try {
+      const body = (await response.json()) as HostedResponse;
+      detail = body.error ?? "";
+    } catch {
+      detail = "";
+    }
+    throw new Error(`Analysis service returned HTTP ${response.status}${detail ? `: ${detail}` : ""}.`);
+  }
+
+  const data = (await response.json()) as HostedResponse;
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data.response ?? "";
+}
+
+// Calls local Ollama and returns the raw model text (a JSON string).
+async function generateOllama(
+  prompt: string,
+  settings: AppSettings,
+  options: { temperature: number; topP: number; numPredict: number }
+): Promise<string> {
+  const response = await fetchOllama(`${normalizeBaseUrl(settings.ollamaUrl)}/api/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: settings.model,
+      prompt: `/no_think\n${prompt}`,
+      format: "json",
+      stream: false,
+      options: {
+        temperature: options.temperature,
+        top_p: options.topP,
+        num_predict: options.numPredict
+      }
+    })
+  });
+
+  await assertOllamaResponse(response);
+
+  const data = (await response.json()) as OllamaGenerateResponse;
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data.response ?? "";
+}
+
+// Backend-agnostic generation entry point.
+async function generateRaw(
+  prompt: string,
+  settings: AppSettings,
+  options: { temperature: number; maxTokens: number }
+): Promise<string> {
+  if (isHosted(settings)) {
+    return generateHosted(prompt, settings, { temperature: options.temperature, maxTokens: options.maxTokens });
+  }
+  return generateOllama(prompt, settings, {
+    temperature: options.temperature,
+    topP: 0.9,
+    numPredict: options.maxTokens
+  });
+}
+
+function activeModelLabel(settings: AppSettings): string {
+  return isHosted(settings) ? HOSTED_MODEL : settings.model;
 }
 
 function extensionOrigin(): string {
@@ -57,7 +169,7 @@ function parseJsonResponse(text: string): { summary: string; outreach: LlmInsigh
   const start = candidate.indexOf("{");
   const end = candidate.lastIndexOf("}");
   if (start === -1 || end === -1) {
-    throw new Error("Ollama response did not contain JSON.");
+    throw new Error("The model response did not contain JSON.");
   }
 
   const parsed = JSON.parse(candidate.slice(start, end + 1)) as {
@@ -65,30 +177,72 @@ function parseJsonResponse(text: string): { summary: string; outreach: LlmInsigh
     outreach?: Partial<LlmInsight["outreach"]>;
   };
 
-  const sanitize = (value: string | undefined, fallback: string) => {
-    const clean = (value ?? "")
-      .replace(/\r\n/g, "\n")
+  // Remove leftover template placeholders the model may emit.
+  const stripPlaceholders = (value: string): string =>
+    value
+      .replace(/\[[^\]\n]{0,48}\]/g, "")
+      .replace(/\{\{?[^}\n]{0,48}\}?\}/g, "")
+      .replace(/\bplaceholder\b/gi, "")
+      .replace(/[ \t]+([,.!?;:])/g, "$1")
+      .replace(/[ \t]{2,}/g, " ")
       .replace(/[ \t]+\n/g, "\n")
       .replace(/\n{3,}/g, "\n\n")
-      .replace(/[ \t]{2,}/g, " ")
+      .replace(/\(\s*\)/g, "")
       .trim();
-    if (!clean || /\byour (?:work|team|company|current work)\b/i.test(clean)) {
-      return fallback;
-    }
-    return clean;
-  };
+
+  const base = (value: string | undefined): string =>
+    stripPlaceholders((value ?? "").replace(/\r\n/g, "\n").trim());
+
+  const summary = base(parsed.summary) || "The model returned no usable summary.";
+
+  // Email keeps line breaks; ensure a Subject line exists.
+  let emailOpener = base(parsed.outreach?.emailOpener);
+  if (emailOpener && !/^subject:/im.test(emailOpener)) {
+    emailOpener = `Subject: Quick note\n\n${emailOpener}`;
+  }
+  emailOpener = emailOpener || "Visible profile data was insufficient for a personalized email.";
+
+  // Connection request: single line, hard cap for LinkedIn's note limit.
+  let connectionRequest = base(parsed.outreach?.connectionRequest).replace(/\s*\n+\s*/g, " ").replace(/\s{2,}/g, " ").trim();
+  const LIMIT = 300;
+  if (connectionRequest.length > LIMIT) {
+    const cut = connectionRequest.slice(0, LIMIT);
+    const lastSpace = cut.lastIndexOf(" ");
+    connectionRequest = `${cut.slice(0, lastSpace > 220 ? lastSpace : LIMIT).trim().replace(/[,;:\-]$/, "")}…`;
+  }
+  connectionRequest = connectionRequest || "Visible profile data was insufficient for a personalized connection request.";
+
+  // Icebreaker: a single concise line.
+  const icebreaker = base(parsed.outreach?.icebreaker).replace(/\s*\n+\s*/g, " ").trim() || "Visible profile data was insufficient for a specific icebreaker.";
 
   return {
-    summary: sanitize(parsed.summary, "The local model returned no usable summary."),
+    summary,
     outreach: {
-      emailOpener: sanitize(parsed.outreach?.emailOpener, "Visible profile data was insufficient for a personalized email."),
-      connectionRequest: sanitize(parsed.outreach?.connectionRequest, "Visible profile data was insufficient for a personalized connection request."),
-      icebreaker: sanitize(parsed.outreach?.icebreaker, "Visible profile data was insufficient for a specific icebreaker.")
+      emailOpener,
+      connectionRequest,
+      icebreaker
     }
   };
 }
 
 export async function checkOllama(settings: AppSettings): Promise<{ available: boolean; models: string[] }> {
+  if (isHosted(settings)) {
+    let response: Response;
+    try {
+      response = await fetch(hostedHealthUrl(settings));
+    } catch {
+      throw new Error("Cannot reach the analysis service. Check your internet connection or the API endpoint in Settings.");
+    }
+    if (!response.ok) {
+      throw new Error(`Analysis service returned HTTP ${response.status}.`);
+    }
+    const data = (await response.json()) as { ok?: boolean; hasKey?: boolean; model?: string };
+    if (!data.hasKey) {
+      throw new Error("Analysis service is reachable but missing its API key. Contact support.");
+    }
+    return { available: Boolean(data.ok), models: [data.model ?? HOSTED_MODEL] };
+  }
+
   const response = await fetchOllama(`${normalizeBaseUrl(settings.ollamaUrl)}/api/tags`);
   await assertOllamaResponse(response);
 
@@ -105,35 +259,13 @@ export async function generateLinkedInInsight(
   scores: LinkedInScores,
   settings: AppSettings
 ): Promise<LlmInsight> {
-  const prompt = buildLinkedInInsightPrompt(profile, signals, scores);
-  const response = await fetchOllama(`${normalizeBaseUrl(settings.ollamaUrl)}/api/generate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: settings.model,
-      prompt,
-      format: "json",
-      stream: false,
-      options: {
-        temperature: 0.2,
-        top_p: 0.8,
-        num_predict: 450
-      }
-    })
-  });
-
-  await assertOllamaResponse(response);
-
-  const data = (await response.json()) as OllamaGenerateResponse;
-  if (data.error) {
-    throw new Error(data.error);
-  }
-
-  const parsed = parseJsonResponse(data.response ?? "");
+  const prompt = buildLinkedInInsightPrompt(profile, signals, scores, settings.senderName || undefined, settings.senderRole || undefined);
+  const raw = await generateRaw(prompt, settings, { temperature: 0.2, maxTokens: 900 });
+  const parsed = parseJsonResponse(raw);
   return {
     summary: parsed.summary,
     outreach: parsed.outreach,
-    model: settings.model,
+    model: activeModelLabel(settings),
     generatedAt: new Date().toISOString()
   };
 }
@@ -161,36 +293,16 @@ export async function generateProfileOutreach({
     scores,
     resumeName,
     resumeText: resumeText.slice(0, 6500),
-    contextPrompt
+    contextPrompt,
+    senderName: settings.senderName || undefined,
+    senderRole: settings.senderRole || undefined
   });
-  const response = await fetchOllama(`${normalizeBaseUrl(settings.ollamaUrl)}/api/generate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: settings.model,
-      prompt,
-      format: "json",
-      stream: false,
-      options: {
-        temperature: 0.25,
-        top_p: 0.85,
-        num_predict: 700
-      }
-    })
-  });
-
-  await assertOllamaResponse(response);
-
-  const data = (await response.json()) as OllamaGenerateResponse;
-  if (data.error) {
-    throw new Error(data.error);
-  }
-
-  const parsed = parseJsonResponse(data.response ?? "");
+  const raw = await generateRaw(prompt, settings, { temperature: 0.25, maxTokens: 1200 });
+  const parsed = parseJsonResponse(raw);
   return {
     summary: parsed.summary,
     outreach: parsed.outreach,
-    model: `${settings.model} + resume`,
+    model: `${activeModelLabel(settings)} + resume`,
     generatedAt: new Date().toISOString()
   };
 }

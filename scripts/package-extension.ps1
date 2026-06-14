@@ -1,6 +1,6 @@
 param(
   [string]$DistPath = "dist",
-  [string]$OutputPath = "release/internet-detective-extension.zip"
+  [string]$OutputPath = "release/spectra-extension.zip"
 )
 
 $ErrorActionPreference = "Stop"

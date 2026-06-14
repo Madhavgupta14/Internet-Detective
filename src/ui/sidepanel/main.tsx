@@ -1,7 +1,8 @@
-import { BriefcaseBusiness, ChevronDown, FileText, Gauge, Loader2, Mail, MessageSquare, RefreshCw, Search, Sparkles, Target, Upload, UserRound, X } from "lucide-react";
+import { AtSign, BriefcaseBusiness, ChevronDown, FileText, Gauge, Loader2, LogOut, Mail, MessageSquare, RefreshCw, Search, Sparkles, Target, Upload, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { LinkedInAnalysis, OutreachSuggestions, ScoreResult } from "../../shared/types";
+import type { AuthState, EmailResult, LinkedInAnalysis, OutreachSuggestions, ScoreResult } from "../../shared/types";
+import type { EmailFinderResult } from "../../background/emailFinder";
 import "../shared/index.css";
 import { Button, CopyButton, EmptyState, StatusLine } from "../shared/components";
 import { sendMessage } from "../shared/runtime";
@@ -205,10 +206,16 @@ function resumePayload(resume: ParsedResume | StoredResume) {
 
 function ProfileOutreachBuilder({
   analysis,
-  onGenerated
+  onGenerated,
+  signedIn,
+  onSignIn,
+  authBusy
 }: {
   analysis: LinkedInAnalysis;
   onGenerated: (analysis: LinkedInAnalysis) => void;
+  signedIn: boolean;
+  onSignIn: () => void;
+  authBusy: boolean;
 }) {
   const [resume, setResume] = useState<ParsedResume | StoredResume | undefined>();
   const [intent, setIntent] = useState("Hiring");
@@ -271,6 +278,10 @@ function ProfileOutreachBuilder({
   }
 
   async function generate() {
+    if (!signedIn) {
+      onSignIn();
+      return;
+    }
     if (!resume) {
       setError("Upload a resume before generating profile-aware outreach.");
       return;
@@ -380,11 +391,146 @@ function ProfileOutreachBuilder({
         <div className="min-w-0 text-xs leading-5 text-ink/50">
           Target: <span className="font-medium text-ink/70">{analysis.profile.name || "LinkedIn profile"}</span>
         </div>
-        <Button disabled={parsing || generating || !resume} onClick={generate} title="Generate profile-aware outreach">
-          {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          Generate
-        </Button>
+        {signedIn ? (
+          <Button disabled={parsing || generating || !resume} onClick={generate} title="Generate profile-aware outreach">
+            {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            Generate
+          </Button>
+        ) : (
+          <Button disabled={authBusy} onClick={onSignIn} title="Sign in with Google to generate outreach">
+            {authBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserRound className="h-4 w-4" />}
+            Sign in to generate
+          </Button>
+        )}
       </div>
+      {!signedIn && (
+        <p className="mt-2 text-[11px] leading-5 text-ink/50">Sign in with Google to generate outreach copy.</p>
+      )}
+    </section>
+  );
+}
+
+function confidenceBadge(c: number, source: EmailResult["source"]): string {
+  if (source === "hunter") return "bg-moss text-white";
+  if (c >= 40) return "bg-brass/20 text-brass";
+  return "bg-ink/8 text-ink/50";
+}
+
+type EmailFinderResponse = EmailFinderResult & {
+  usesRemaining?: number;
+  freeLimit?: number;
+  usingOwnKey?: boolean;
+};
+
+function EmailFinderPanel({
+  name,
+  domain,
+  auth,
+  onSignIn,
+  authBusy
+}: {
+  name: string;
+  domain: string;
+  auth: AuthState | null;
+  onSignIn: () => void;
+  authBusy: boolean;
+}) {
+  const [results, setResults] = useState<EmailResult[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [meta, setMeta] = useState<EmailFinderResponse | null>(null);
+
+  const usingOwnKey = Boolean(auth?.usingOwnKey);
+  const signedIn = Boolean(auth?.user);
+  const unlocked = signedIn || usingOwnKey;
+
+  async function find() {
+    if (!unlocked) {
+      onSignIn();
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await sendMessage<EmailFinderResponse>({ type: "FIND_EMAIL" });
+      setResults(res.results);
+      setMeta(res);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Email lookup failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Prefer the freshest credit count from the last lookup, else the account state.
+  const usesRemaining = meta?.usesRemaining ?? auth?.usesRemaining;
+  const freeLimit = meta?.freeLimit ?? auth?.freeLimit;
+  const limited = !usingOwnKey && typeof usesRemaining === "number";
+  const noFreeLeft = limited && usesRemaining === 0;
+
+  return (
+    <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <AtSign className="h-4 w-4 text-signal" />
+          <h2 className="text-sm font-semibold">Find email</h2>
+        </div>
+        {unlocked ? (
+          <Button disabled={loading} onClick={find} variant="secondary">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            {loading ? "Searching…" : results ? "Refresh" : "Find"}
+          </Button>
+        ) : (
+          <Button disabled={authBusy} onClick={onSignIn} variant="secondary">
+            {authBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserRound className="h-4 w-4" />}
+            Sign in
+          </Button>
+        )}
+      </div>
+
+      {results === null && !error && (
+        <p className="mt-3 text-xs leading-5 text-ink/50">
+          Finds the most likely email for <span className="font-medium text-ink/70">{name}</span> at{" "}
+          <span className="font-medium text-ink/70">{domain}</span>.{" "}
+          {usingOwnKey
+            ? "Using your own Hunter.io API key (unlimited)."
+            : "Sign in with Google for free verified lookups, or add your own Hunter.io API key in Settings for unlimited results."}
+        </p>
+      )}
+
+      {error && <p className="mt-3 text-xs text-clay">{error}</p>}
+
+      {limited && (
+        <p className="mt-3 text-[11px] leading-5 text-ink/50">
+          {noFreeLeft ? (
+            <>
+              You&apos;ve used all {freeLimit} free verified lookups for this account. Showing best-guess patterns. Add
+              your own Hunter.io API key in Settings for unlimited results.
+            </>
+          ) : (
+            <>
+              <span className="font-medium text-ink/70">{usesRemaining}</span> of {freeLimit} free verified lookups left
+              on this account.
+            </>
+          )}
+        </p>
+      )}
+
+      {results && results.length > 0 && (
+        <div className="mt-3 grid gap-2">
+          {results.map((r) => (
+            <div className="flex items-center justify-between gap-3 rounded-md border border-ink/10 bg-paper px-3 py-2" key={r.email}>
+              <span className="min-w-0 truncate font-mono text-xs text-ink/80">{r.email}</span>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${confidenceBadge(r.confidence, r.source)}`}>
+                  {r.source === "hunter" ? `${r.confidence}% verified` : `~${r.confidence}%`}
+                </span>
+                <CopyButton value={r.email} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -395,15 +541,52 @@ function SidePanel() {
   const [error, setError] = useState("");
   const [focus, setFocus] = useState<FocusKey>("hiringIntent");
   const [outreachTab, setOutreachTab] = useState<OutreachKey>("emailOpener");
+  const [auth, setAuth] = useState<AuthState | null>(null);
+  const [authBusy, setAuthBusy] = useState(false);
 
   async function loadLatest() {
     const latest = await sendMessage<LinkedInAnalysis | undefined>({ type: "GET_LATEST_ANALYSIS" });
     setAnalysis(latest);
   }
 
+  async function loadAuth() {
+    try {
+      setAuth(await sendMessage<AuthState>({ type: "GET_AUTH_STATE" }));
+    } catch {
+      setAuth({ user: null, usingOwnKey: false });
+    }
+  }
+
+  async function signIn() {
+    setAuthBusy(true);
+    setError("");
+    try {
+      setAuth(await sendMessage<AuthState>({ type: "SIGN_IN" }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function signOutUser() {
+    setAuthBusy(true);
+    try {
+      await sendMessage({ type: "SIGN_OUT" });
+      await loadAuth();
+    } catch {
+      // ignore
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
   useEffect(() => {
     loadLatest().catch(() => undefined);
+    loadAuth().catch(() => undefined);
   }, []);
+
+  const signedIn = Boolean(auth?.user);
 
   async function analyze() {
     setBusy(true);
@@ -425,13 +608,44 @@ function SidePanel() {
   return (
     <main className="min-h-screen bg-paper text-ink">
       <header className="sticky top-0 z-10 border-b border-ink/10 bg-paper/95 px-4 py-4 backdrop-blur">
-        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-signal">Internet Detective</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-signal">Spectra</div>
         <div className="mt-2 flex items-center justify-between gap-3">
           <h1 className="min-w-0 truncate text-lg font-semibold text-ink">LinkedIn intelligence</h1>
           <Button disabled={busy} onClick={analyze} title="Analyze current tab">
             {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             Analyze
           </Button>
+        </div>
+        <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+          {signedIn ? (
+            <>
+              <span className="min-w-0 truncate text-ink/55">
+                Signed in as <span className="font-medium text-ink/75">{auth?.user?.email}</span>
+              </span>
+              <button
+                className="inline-flex shrink-0 items-center gap-1 rounded-md border border-ink/15 px-2 py-1 text-ink/60 hover:text-ink disabled:opacity-50"
+                disabled={authBusy}
+                onClick={signOutUser}
+                type="button"
+              >
+                {authBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <LogOut className="h-3 w-3" />}
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="min-w-0 truncate text-ink/45">Sign in to unlock outreach and email finder</span>
+              <button
+                className="inline-flex shrink-0 items-center gap-1 rounded-md border border-ink/15 px-2 py-1 text-ink/70 hover:text-ink disabled:opacity-50"
+                disabled={authBusy}
+                onClick={signIn}
+                type="button"
+              >
+                {authBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserRound className="h-3 w-3" />}
+                Sign in with Google
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -516,7 +730,7 @@ function SidePanel() {
               <Sparkles className="h-4 w-4 text-signal" />
               <h2 className="text-sm font-semibold">Outreach</h2>
             </div>
-            <ProfileOutreachBuilder analysis={analysis} onGenerated={setAnalysis} />
+            <ProfileOutreachBuilder analysis={analysis} authBusy={authBusy} onGenerated={setAnalysis} onSignIn={signIn} signedIn={signedIn} />
           </section>
 
           <section>
@@ -526,6 +740,14 @@ function SidePanel() {
             </div>
             <OutreachPanel onSelect={setOutreachTab} outreach={outreach} selected={outreachTab} />
           </section>
+
+          <EmailFinderPanel
+            auth={auth}
+            authBusy={authBusy}
+            domain={analysis.profile.currentCompany ?? ""}
+            name={analysis.profile.name}
+            onSignIn={signIn}
+          />
         </div>
       )}
     </main>

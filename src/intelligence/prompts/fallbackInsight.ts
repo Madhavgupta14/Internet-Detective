@@ -77,7 +77,7 @@ export function buildFallbackInsight(profile: LinkedInProfile, scores: LinkedInS
   return {
     model: "Local template",
     generatedAt: new Date().toISOString(),
-    summary: `Internet Detective calculated these scores locally from visible LinkedIn profile signals. The strongest current signal is ${strongest}. ${summaryContext} Verify fit before outreach when evidence is limited.`,
+    summary: `Spectra calculated these scores locally from visible LinkedIn profile signals. The strongest current signal is ${strongest}. ${summaryContext} Verify fit before outreach when evidence is limited.`,
     outreach: {
       emailOpener: hasSpecificAnchor
         ? `Subject: Quick note on ${subjectPart}\n\nHi ${name},\n\n${anchorLine}\n\n${fitLine} Open to a brief conversation this week?`

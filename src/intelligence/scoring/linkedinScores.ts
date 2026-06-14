@@ -53,12 +53,12 @@ export function scoreLinkedInProfile(signals: LinkedInSignals): LinkedInScores {
     decisionMaker: result(
       decisionMaker,
       signals.confidence,
-      factorsFor(signals, ["executive", "founder", "VP-level", "Department", "Team leadership", "Management", "Investor"], "No strong decision-maker evidence was extracted.")
+      factorsFor(signals, ["executive", "founder", "VP-level", "Department", "Team leadership", "Management", "Investor", "ownership", "reach", "Top-tier"], "No strong decision-maker evidence was extracted.")
     ),
     founder: result(
       founder,
       signals.confidence,
-      factorsFor(signals, ["founder", "Startup", "Entrepreneurial", "Executive"], "No strong founder evidence was extracted.")
+      factorsFor(signals, ["founder", "builder", "Startup", "Entrepreneurial", "Executive", "ownership", "Growth-stage"], "No strong founder evidence was extracted.")
     ),
     hiringIntent: result(
       hiringIntent,

@@ -23,8 +23,12 @@ export type LinkedInProfile = {
   currentCompany?: string;
   about?: string;
   experience: ExperienceItem[];
+  education: string[];
+  certifications: string[];
   skills: string[];
   activity: ActivityItem[];
+  followers?: number;
+  connections?: string;
   rawTextSample: string;
   extractionConfidence: number;
 };
@@ -91,10 +95,23 @@ export type LinkedInAnalysis = {
   createdAt: string;
 };
 
+export type LlmBackend = "hosted" | "ollama";
+
 export type AppSettings = {
+  backend: LlmBackend;
+  apiEndpoint: string;
   ollamaUrl: string;
   model: string;
   enableLlm: boolean;
+  senderName: string;
+  senderRole: string;
+  hunterApiKey: string;
+};
+
+export type EmailResult = {
+  email: string;
+  confidence: number;
+  source: "hunter" | "pattern";
 };
 
 export type ResumeFileKind = "pdf" | "docx" | "text";
@@ -164,6 +181,36 @@ export type SaveOutreachPreferencesMessage = {
   preferences: OutreachPreferences;
 };
 
+export type FindEmailMessage = {
+  type: "FIND_EMAIL";
+};
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  name?: string;
+  picture?: string;
+};
+
+export type AuthState = {
+  user: AuthUser | null;
+  usesRemaining?: number;
+  freeLimit?: number;
+  usingOwnKey: boolean;
+};
+
+export type SignInMessage = {
+  type: "SIGN_IN";
+};
+
+export type SignOutMessage = {
+  type: "SIGN_OUT";
+};
+
+export type GetAuthStateMessage = {
+  type: "GET_AUTH_STATE";
+};
+
 export type AppMessage =
   | ExtractProfileMessage
   | AnalyzeCurrentTabMessage
@@ -174,7 +221,11 @@ export type AppMessage =
   | DeleteAllDataMessage
   | GenerateProfileOutreachMessage
   | GetOutreachPreferencesMessage
-  | SaveOutreachPreferencesMessage;
+  | SaveOutreachPreferencesMessage
+  | FindEmailMessage
+  | SignInMessage
+  | SignOutMessage
+  | GetAuthStateMessage;
 
 export type MessageResponse<T> = {
   ok: boolean;

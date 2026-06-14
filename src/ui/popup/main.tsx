@@ -37,7 +37,7 @@ function Popup() {
   return (
     <main className="w-[360px] p-4">
       <header className="mb-4">
-        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-signal">Internet Detective</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-signal">Spectra</div>
         <h1 className="mt-1 text-xl font-semibold text-ink">Local intelligence</h1>
       </header>
 

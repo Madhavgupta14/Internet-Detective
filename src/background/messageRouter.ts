@@ -2,9 +2,13 @@
 import { scoreLinkedInProfile } from "../intelligence/scoring/linkedinScores";
 import { buildFallbackInsight } from "../intelligence/prompts/fallbackInsight";
 import { checkOllama, generateLinkedInInsight, generateProfileOutreach } from "./ollamaClient";
+import { fetchAccountCredits, findEmailsForAnalysis } from "./emailFinder";
+import { getAccessToken, getCurrentUser, signIn, signOut } from "./auth";
 import { deleteAllData, getLatestAnalysis, getOutreachPreferences, getSettings, saveAnalysis, saveOutreachPreferences, saveSettings } from "../storage/db";
 import type {
   AppMessage,
+  AppSettings,
+  AuthState,
   GenerateProfileOutreachMessage,
   LinkedInAnalysis,
   LinkedInProfile,
@@ -12,6 +16,23 @@ import type {
   OutreachPreferences,
   ResumePayload
 } from "../shared/types";
+
+async function buildAuthState(settings: AppSettings, token?: string | null): Promise<AuthState> {
+  const usingOwnKey = Boolean(settings.hunterApiKey?.trim());
+  const user = await getCurrentUser();
+  if (!user) {
+    return { user: null, usingOwnKey };
+  }
+  if (usingOwnKey) {
+    return { user, usingOwnKey };
+  }
+  const activeToken = token ?? (await getAccessToken(false));
+  if (!activeToken) {
+    return { user, usingOwnKey };
+  }
+  const credits = await fetchAccountCredits(settings.apiEndpoint, activeToken);
+  return { user, usingOwnKey, usesRemaining: credits.usesRemaining, freeLimit: credits.freeLimit };
+}
 
 function createId(): string {
   return `analysis_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -55,6 +76,9 @@ async function extractFromTab(tab: chrome.tabs.Tab): Promise<LinkedInProfile> {
     throw new Error("Open a LinkedIn profile page before running analysis.");
   }
 
+  // The manifest already injects content.js as a content script. Only inject
+  // programmatically when the receiver is missing (e.g. tab opened before install),
+  // otherwise a second injection re-runs the bundle and throws a redeclaration error.
   try {
     const extraction = await sendTabMessage<LinkedInProfile>(tab.id, { type: "EXTRACT_LINKEDIN_PROFILE" });
     if (!extraction.ok || !extraction.data) {
@@ -133,6 +157,11 @@ async function generateOutreachFromProfile(message: Extract<AppMessage, { type: 
 
   assertResumeUsable(message.resume);
 
+  const signedInUser = await getCurrentUser();
+  if (!signedInUser) {
+    throw new Error("Sign in with Google to generate outreach.");
+  }
+
   const analysis = await getLatestAnalysis();
   if (!analysis) {
     throw new Error("Run a LinkedIn analysis before generating profile-aware outreach.");
@@ -187,6 +216,34 @@ export async function routeMessage(message: AppMessage): Promise<unknown> {
     case "DELETE_ALL_DATA":
       await deleteAllData();
       return { deleted: true };
+    case "FIND_EMAIL": {
+      const analysis = await getLatestAnalysis();
+      if (!analysis) throw new Error("Run a LinkedIn analysis first.");
+
+      const settings = await getSettings();
+      const hasOwnKey = Boolean(settings.hunterApiKey?.trim());
+
+      // Own-key users skip the shared server; everyone else must be signed in,
+      // and the server enforces the per-account verified-lookup limit.
+      let token: string | null = null;
+      if (!hasOwnKey) {
+        token = await getAccessToken(false);
+        if (!token) {
+          throw new Error("Sign in with Google to use the email finder.");
+        }
+      }
+
+      return findEmailsForAnalysis(analysis, settings, { token });
+    }
+    case "SIGN_IN": {
+      await signIn();
+      return buildAuthState(await getSettings());
+    }
+    case "SIGN_OUT":
+      await signOut();
+      return { signedOut: true };
+    case "GET_AUTH_STATE":
+      return buildAuthState(await getSettings());
     default:
       throw new Error("Unsupported message.");
   }

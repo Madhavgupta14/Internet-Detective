@@ -31,6 +31,7 @@ export function textNearHeading(headingText: RegExp): string {
     return "";
   }
 
-  const section = heading.closest("section");
-  return cleanText(section?.textContent);
+  const section = heading.closest("section") as HTMLElement | null;
+  if (!section) return "";
+  return cleanText(section.innerText ?? section.textContent ?? "");
 }

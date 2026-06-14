@@ -20,4 +20,4 @@ setx OLLAMA_ORIGINS $origins | Out-Null
 Write-Host "Configured OLLAMA_ORIGINS for this Windows user:"
 Write-Host $origins
 Write-Host ""
-Write-Host "Restart Ollama completely before using Internet Detective again."
+Write-Host "Restart Ollama completely before using Spectra again."
