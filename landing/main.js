@@ -11,9 +11,8 @@
      CONFIG — edit these when the listing goes live
      --------------------------------------------------------- */
   const CONFIG = {
-    // Chrome Web Store listing. Leave empty until published; buttons then
-    // fall back to scrolling to the CTA section instead of 404-ing.
-    storeUrl: "",
+    // Chrome Web Store listing. Live once the review is approved.
+    storeUrl: "https://chromewebstore.google.com/detail/edkadnjfnonjncinjjeohgfloagdlnba",
   };
 
   // current year in footer
