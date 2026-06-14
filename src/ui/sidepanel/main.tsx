@@ -6,7 +6,6 @@ import type { EmailFinderResult } from "../../background/emailFinder";
 import "../shared/index.css";
 import { Button, CopyButton, EmptyState, StatusLine } from "../shared/components";
 import { ProfileCharacterFull } from "../shared/avatar";
-import { SectionCreature } from "../shared/creatures";
 import { PanelScenery } from "../shared/scenery";
 import { sendMessage } from "../shared/runtime";
 import { parseResumeFile, summarizeResume, type ParsedResume } from "../../intelligence/resume/resumeParser";
@@ -99,7 +98,7 @@ function FocusPanel({ label, score }: { label: FocusKey; score: ScoreResult }) {
   const usefulFactors = score.factors.filter((factor) => factor.impact > 0);
 
   return (
-    <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
+    <section className="rounded-2xl border border-white/55 bg-white/80 p-4 shadow-panel backdrop-blur-md">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold">{meta.label}</h2>
@@ -159,7 +158,7 @@ function OutreachPanel({ outreach, selected, onSelect }: { outreach: OutreachSug
   const meta = outreachMeta[selected];
 
   return (
-    <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
+    <section className="rounded-2xl border border-white/55 bg-white/80 p-4 shadow-panel backdrop-blur-md">
       <div className="grid grid-cols-3 gap-2">
         {(Object.keys(outreachMeta) as OutreachKey[]).map((key) => {
           const item = outreachMeta[key];
@@ -319,7 +318,7 @@ function ProfileOutreachBuilder({
   }
 
   return (
-    <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
+    <section className="rounded-2xl border border-white/55 bg-white/80 p-4 shadow-panel backdrop-blur-md">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold">Profile outreach builder</h2>
@@ -474,7 +473,7 @@ function EmailFinderPanel({
   const noFreeLeft = limited && usesRemaining === 0;
 
   return (
-    <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
+    <section className="rounded-2xl border border-white/55 bg-white/80 p-4 shadow-panel backdrop-blur-md">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <AtSign className="h-4 w-4 text-signal" />
@@ -679,8 +678,6 @@ function SidePanel() {
       ) : (
         <div className="relative z-10 space-y-4 px-4 pb-8">
           <section className="relative px-1 pt-1 pb-2">
-            <SectionCreature kind="astronaut" position="right" offsetTop={-8} />
-            <SectionCreature kind="alien" position="left" offsetTop={-10} delay={1.1} />
             <div className="flex items-center gap-3">
               <ProfileAvatar name={analysis.profile.name} />
               <div className="grid flex-1 gap-2">
@@ -702,16 +699,9 @@ function SidePanel() {
             </div>
           </section>
 
-          {focusedScore ? (
-            <div className="relative">
-              <SectionCreature kind="eagle" position="right" />
-              <FocusPanel label={focus} score={focusedScore} />
-            </div>
-          ) : null}
+          {focusedScore ? <FocusPanel label={focus} score={focusedScore} /> : null}
 
-          <div className="relative">
-            <SectionCreature kind="cat" position="right" />
-            <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
+          <section className="rounded-2xl border border-white/55 bg-white/80 p-4 shadow-panel backdrop-blur-md">
               <h2 className="text-sm font-semibold">Hiring and skills</h2>
               <div className="mt-3 grid gap-4">
                 <SignalList
@@ -726,23 +716,18 @@ function SidePanel() {
                 />
               </div>
             </section>
-          </div>
 
-          <div className="relative">
-            <SectionCreature kind="human" position="left" />
-            <details className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold">Insights</h2>
-                <ChevronDown className="h-4 w-4 text-ink/45" />
-              </summary>
-              <p className="mt-3 text-sm leading-6 text-ink/75">
-                {analysis.insight?.summary ?? "Scores were calculated locally from visible LinkedIn profile signals. Start Ollama and enable local LLM generation in Settings to add a written explanation and outreach copy."}
-              </p>
-            </details>
-          </div>
+          <details className="rounded-2xl border border-white/55 bg-white/80 p-4 shadow-panel backdrop-blur-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold">Insights</h2>
+              <ChevronDown className="h-4 w-4 text-ink/45" />
+            </summary>
+            <p className="mt-3 text-sm leading-6 text-ink/75">
+              {analysis.insight?.summary ?? "Scores were calculated locally from visible LinkedIn profile signals. Start Ollama and enable local LLM generation in Settings to add a written explanation and outreach copy."}
+            </p>
+          </details>
 
-          <section className="relative">
-            <SectionCreature kind="dog" position="right" offsetTop={-22} />
+          <section>
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-ink/55 px-3 py-1 text-white shadow-soft backdrop-blur">
               <Sparkles className="h-4 w-4" />
               <h2 className="text-sm font-semibold">Outreach</h2>
@@ -750,8 +735,7 @@ function SidePanel() {
             <ProfileOutreachBuilder analysis={analysis} authBusy={authBusy} onGenerated={setAnalysis} onSignIn={signIn} signedIn={signedIn} />
           </section>
 
-          <section className="relative">
-            <SectionCreature kind="worm" position="left" offsetTop={-10} delay={0.6} />
+          <section>
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-ink/55 px-3 py-1 text-white shadow-soft backdrop-blur">
               <Mail className="h-4 w-4" />
               <h2 className="text-sm font-semibold">Generated copy</h2>
@@ -759,16 +743,13 @@ function SidePanel() {
             <OutreachPanel onSelect={setOutreachTab} outreach={outreach} selected={outreachTab} />
           </section>
 
-          <div className="relative">
-            <SectionCreature kind="magma" position="right" offsetTop={-12} delay={0.3} />
-            <EmailFinderPanel
-              auth={auth}
-              authBusy={authBusy}
-              domain={analysis.profile.currentCompany ?? ""}
-              name={analysis.profile.name}
-              onSignIn={signIn}
-            />
-          </div>
+          <EmailFinderPanel
+            auth={auth}
+            authBusy={authBusy}
+            domain={analysis.profile.currentCompany ?? ""}
+            name={analysis.profile.name}
+            onSignIn={signIn}
+          />
         </div>
       )}
     </main>

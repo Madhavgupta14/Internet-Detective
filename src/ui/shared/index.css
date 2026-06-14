@@ -64,19 +64,17 @@ textarea:focus-visible {
 .panel-descent {
   background: linear-gradient(
     180deg,
-    #070b1c 0%,
-    #0b1230 9%,
-    #16234f 20%,
-    #2f4f97 33%,
-    #5183d8 45%,
-    #87b6ec 55%,
-    #bcdcef 63%,
-    #8bb56a 70%,
-    #4f8a36 78%,
-    #5c4a2c 85%,
-    #3a2a1c 92%,
-    #5a1f12 97%,
-    #c2410c 100%
+    #0a0e1a 0%,
+    #0f1730 14%,
+    #1a2547 30%,
+    #283a63 44%,
+    #3a4f7a 56%,
+    #455772 65%,
+    #3c4458 74%,
+    #2c2f3a 84%,
+    #25211f 92%,
+    #2c211b 97%,
+    #4a2c1c 100%
   );
 }
 
@@ -201,10 +199,10 @@ textarea:focus-visible {
 @keyframes char-float {
   0%,
   100% {
-    transform: translateY(0) rotate(-1.2deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px) rotate(1.2deg);
+    transform: translateY(-3px);
   }
 }
 
@@ -762,4 +760,243 @@ textarea:focus-visible {
     radial-gradient(3px 3px at 20% 30%, rgba(0, 0, 0, 0.25), transparent 60%),
     radial-gradient(4px 4px at 70% 55%, rgba(0, 0, 0, 0.2), transparent 60%),
     radial-gradient(3px 3px at 40% 78%, rgba(0, 0, 0, 0.22), transparent 60%);
+}
+
+/* =========================================================
+   Refined atmospheric ambient (professional)
+   ========================================================= */
+.amb-stars {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 46%;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 6%, rgba(255,255,255,0.9), transparent 60%),
+    radial-gradient(1px 1px at 64% 5%, rgba(255,255,255,0.6), transparent 60%),
+    radial-gradient(1.2px 1.2px at 38% 11%, rgba(255,255,255,0.7), transparent 60%),
+    radial-gradient(1px 1px at 84% 13%, rgba(255,255,255,0.55), transparent 60%),
+    radial-gradient(1.4px 1.4px at 22% 18%, rgba(255,255,255,0.7), transparent 60%),
+    radial-gradient(1px 1px at 56% 21%, rgba(255,255,255,0.5), transparent 60%),
+    radial-gradient(1.2px 1.2px at 8% 27%, rgba(255,255,255,0.65), transparent 60%),
+    radial-gradient(1px 1px at 78% 28%, rgba(255,255,255,0.5), transparent 60%),
+    radial-gradient(1.3px 1.3px at 44% 33%, rgba(255,255,255,0.65), transparent 60%),
+    radial-gradient(1px 1px at 90% 36%, rgba(255,255,255,0.45), transparent 60%),
+    radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,0.5), transparent 60%),
+    radial-gradient(1px 1px at 66% 43%, rgba(255,255,255,0.4), transparent 60%);
+}
+/* large, very soft depth glows — premium, low-contrast, slow */
+.amb-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(20px);
+  opacity: 0.5;
+}
+.amb-glow--1 {
+  top: 6%;
+  right: -12%;
+  width: 46%;
+  height: 26%;
+  background: radial-gradient(closest-side, rgba(96, 130, 220, 0.28), transparent 70%);
+}
+.amb-glow--2 {
+  top: 30%;
+  left: -14%;
+  width: 50%;
+  height: 28%;
+  background: radial-gradient(closest-side, rgba(80, 110, 200, 0.2), transparent 70%);
+}
+/* faint horizon light where sky meets earth */
+.amb-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 62%;
+  height: 16%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(150, 170, 205, 0.14), transparent);
+}
+/* restrained ember glow at the core */
+.amb-core {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 22%;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 130%, rgba(190, 95, 45, 0.4), rgba(150, 70, 35, 0.12) 45%, transparent 72%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .amb-stars { animation: amb-twinkle 6s ease-in-out infinite; }
+  .amb-glow--1 { animation: amb-drift1 26s ease-in-out infinite; }
+  .amb-glow--2 { animation: amb-drift2 32s ease-in-out infinite; }
+  .amb-core { animation: amb-corepulse 9s ease-in-out infinite; }
+}
+@keyframes amb-twinkle {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+@keyframes amb-drift1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-16px, 10px); }
+}
+@keyframes amb-drift2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(14px, -8px); }
+}
+@keyframes amb-corepulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* =========================================================
+   Background motion silhouettes (subtle, per depth band)
+   ========================================================= */
+/* --- space: shooting stars + rocket --- */
+.sc-shoot {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.8);
+  opacity: 0;
+}
+.sc-shoot::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1px;
+  width: 30px;
+  height: 1px;
+  background: linear-gradient(90deg, #fff, transparent);
+  transform-origin: left center;
+  transform: rotate(150deg);
+}
+.sc-shoot--1 { top: 5%; left: 24%; }
+.sc-shoot--2 { top: 9%; left: 62%; }
+.sc-shoot--3 { top: 3%; left: 84%; }
+.sc-rocket {
+  position: absolute;
+  left: 16%;
+  top: 22%;
+  opacity: 0.32;
+}
+.sc-rocket::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 2px;
+  height: 26px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(220, 230, 255, 0.5), transparent);
+}
+
+/* --- sky: clouds + wind + jet --- */
+.sc-cloud {
+  position: absolute;
+  height: 16px;
+  width: 64px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(6px);
+}
+.sc-cloud--1 { top: 30%; width: 80px; height: 20px; }
+.sc-cloud--2 { top: 40%; width: 60px; opacity: 0.8; }
+.sc-cloud--3 { top: 52%; width: 100px; height: 24px; opacity: 0.7; }
+.sc-wind {
+  position: absolute;
+  height: 1px;
+  width: 60px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  border-radius: 999px;
+}
+.sc-wind--1 { top: 34%; }
+.sc-wind--2 { top: 46%; width: 84px; opacity: 0.8; }
+.sc-wind--3 { top: 57%; width: 48px; opacity: 0.7; }
+.sc-jet {
+  position: absolute;
+  top: 36%;
+  left: -60px;
+  opacity: 0.4;
+}
+.sc-jet::after {
+  content: "";
+  position: absolute;
+  right: 32px;
+  top: 5px;
+  width: 60px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4));
+}
+
+/* --- ground: distant skyline of houses --- */
+.sc-skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 64%;
+  opacity: 0.3;
+}
+
+/* --- underground: worms + skeletons --- */
+.sc-worm { position: absolute; opacity: 0.32; }
+.sc-worm--1 { top: 84%; left: 14%; }
+.sc-worm--2 { top: 92%; left: 64%; }
+.sc-bones { position: absolute; opacity: 0.16; }
+.sc-bones--1 { top: 82%; left: 60%; transform: rotate(-12deg); }
+.sc-bones--2 { top: 93%; left: 20%; transform: rotate(8deg) scale(0.85); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .sc-shoot--1 { animation: sc-shoot 9s ease-in infinite; }
+  .sc-shoot--2 { animation: sc-shoot 11s ease-in infinite 3s; }
+  .sc-shoot--3 { animation: sc-shoot 8s ease-in infinite 6s; }
+  .sc-rocket { animation: sc-rocket 34s ease-in-out infinite; }
+  .sc-cloud--1 { animation: sc-drift 64s linear infinite; }
+  .sc-cloud--2 { animation: sc-drift 92s linear infinite -30s; }
+  .sc-cloud--3 { animation: sc-drift 120s linear infinite -70s; }
+  .sc-wind--1 { animation: sc-windflow 7s ease-in-out infinite; }
+  .sc-wind--2 { animation: sc-windflow 9s ease-in-out infinite -3s; }
+  .sc-wind--3 { animation: sc-windflow 6s ease-in-out infinite -1.5s; }
+  .sc-jet { animation: sc-fly 26s linear infinite; }
+  .sc-worm--1 { animation: sc-wormwig 5s ease-in-out infinite; }
+  .sc-worm--2 { animation: sc-wormwig 6.5s ease-in-out infinite -2s; }
+  .sc-bones--1 { animation: sc-bonefade 8s ease-in-out infinite; }
+  .sc-bones--2 { animation: sc-bonefade 10s ease-in-out infinite -4s; }
+}
+
+@keyframes sc-shoot {
+  0% { opacity: 0; transform: translate(0, 0); }
+  3% { opacity: 1; }
+  12% { opacity: 1; }
+  18%, 100% { opacity: 0; transform: translate(-66px, 140px); }
+}
+@keyframes sc-rocket {
+  0% { transform: translate(0, 60px); opacity: 0; }
+  12% { opacity: 0.32; }
+  80% { opacity: 0.32; }
+  100% { transform: translate(28px, -120px); opacity: 0; }
+}
+@keyframes sc-drift {
+  from { left: -120px; }
+  to { left: 112%; }
+}
+@keyframes sc-windflow {
+  0%, 100% { transform: translateX(-16px); opacity: 0; }
+  50% { transform: translateX(16px); opacity: 1; }
+}
+@keyframes sc-fly {
+  0% { left: -60px; opacity: 0; }
+  6% { opacity: 0.4; }
+  46% { opacity: 0.4; }
+  52%, 100% { left: 112%; opacity: 0; }
+}
+@keyframes sc-wormwig {
+  0%, 100% { transform: translateX(0) rotate(-3deg); }
+  50% { transform: translateX(8px) rotate(3deg); }
+}
+@keyframes sc-bonefade {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.22; }
 }
