@@ -46,9 +46,720 @@ textarea:focus-visible {
   background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
 }
 
+/* 2.5D ambient "depth journey": subtle space -> sky -> horizon as you scroll. */
+.ambient-sky {
+  background: linear-gradient(
+    180deg,
+    #dbe4fb 0%,
+    #e7eefe 22%,
+    #eef4ff 48%,
+    #f4f1fe 72%,
+    #fdf4ea 100%
+  );
+}
+
+/* Full descent: space (top) -> sky -> land -> soil -> molten core (bottom).
+   The gradient stretches across the whole scroll height, so scrolling the
+   report reads as descending from space to the core of the earth. */
+.panel-descent {
+  background: linear-gradient(
+    180deg,
+    #070b1c 0%,
+    #0b1230 9%,
+    #16234f 20%,
+    #2f4f97 33%,
+    #5183d8 45%,
+    #87b6ec 55%,
+    #bcdcef 63%,
+    #8bb56a 70%,
+    #4f8a36 78%,
+    #5c4a2c 85%,
+    #3a2a1c 92%,
+    #5a1f12 97%,
+    #c2410c 100%
+  );
+}
+
+/* twinkling starfield, pinned to the top "space" band (cheap, static dots) */
+.panel-stars {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 560px;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(2px 2px at 14% 6%, #fff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 4%, rgba(255, 255, 255, 0.85), transparent 60%),
+    radial-gradient(1px 1px at 40% 12%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(2px 2px at 86% 14%, #fff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 22% 20%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(1px 1px at 58% 22%, rgba(255, 255, 255, 0.75), transparent 60%),
+    radial-gradient(2px 2px at 8% 30%, rgba(255, 255, 255, 0.9), transparent 60%),
+    radial-gradient(1px 1px at 76% 30%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(1.5px 1.5px at 46% 36%, #fff, transparent 60%),
+    radial-gradient(1px 1px at 90% 40%, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(1.5px 1.5px at 30% 44%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(1px 1px at 64% 48%, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(2px 2px at 16% 54%, rgba(255, 255, 255, 0.75), transparent 60%),
+    radial-gradient(1px 1px at 82% 56%, rgba(255, 255, 255, 0.65), transparent 60%);
+}
+
+/* molten glow at the very bottom (the core) */
+.panel-core-glow {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 320px;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 80% at 50% 125%,
+    rgba(255, 150, 60, 0.55),
+    rgba(255, 110, 30, 0.12) 45%,
+    transparent 70%
+  );
+}
+
+.ambient-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cloud {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+  filter: blur(4px);
+  opacity: 0.7;
+}
+
+.orb-glow {
+  background: radial-gradient(closest-side, rgba(96, 165, 250, 0.45), rgba(96, 165, 250, 0));
+}
+
+/* 3D-ish floating profile character */
+.character-3d__float {
+  transform-origin: center bottom;
+  filter: drop-shadow(0 8px 14px rgba(30, 58, 138, 0.28));
+  will-change: transform;
+}
+.character-3d__cast {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 60%;
+  height: 12px;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgba(15, 23, 42, 0.28), rgba(15, 23, 42, 0));
+  filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cloud {
+    animation-name: drift;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  .character-3d__float {
+    animation: char-float 6s ease-in-out infinite;
+  }
+  .character-3d__cast {
+    animation: char-cast 6s ease-in-out infinite;
+  }
+  .panel-stars {
+    animation: twinkle 5s ease-in-out infinite;
+  }
+  .panel-core-glow {
+    animation: core-pulse 7s ease-in-out infinite;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes core-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes char-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.2deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(1.2deg);
+  }
+}
+
+@keyframes char-cast {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: translateX(-50%) scaleX(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: translateX(-50%) scaleX(0.82);
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(-30%);
+  }
+  to {
+    transform: translateX(130%);
+  }
+}
+
 .brand-text-gradient {
   background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* =========================================================
+   Playful zone creatures perched on each panel
+   ========================================================= */
+.creature {
+  filter: drop-shadow(0 4px 5px rgba(15, 23, 42, 0.28));
+}
+.creature__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 60%;
+  height: 6px;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgba(15, 23, 42, 0.25), rgba(15, 23, 42, 0));
+}
+
+/* extra "realistic" backdrop layers */
+.panel-nebula {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 520px;
+  pointer-events: none;
+  background:
+    radial-gradient(220px 220px at 82% 12%, rgba(99, 102, 241, 0.28), transparent 60%),
+    radial-gradient(180px 180px at 12% 30%, rgba(37, 99, 235, 0.22), transparent 62%);
+  filter: blur(8px);
+}
+.panel-strata {
+  position: absolute;
+  inset: auto 0 220px 0;
+  height: 260px;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    8deg,
+    rgba(0, 0, 0, 0.12) 0px,
+    rgba(0, 0, 0, 0.12) 2px,
+    transparent 2px,
+    transparent 22px
+  );
+}
+
+.beh {
+  transform-origin: center bottom;
+  will-change: transform;
+}
+/* while chasing the cursor, JS owns the transform — pause the reel */
+.beh.is-chasing {
+  animation: none !important;
+}
+/* when showing a real 3D model: hold still and let it receive drag input */
+.beh--3d {
+  animation: none !important;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* behaviour reels (whole-creature locomotion / acting) */
+  .beh-astronaut {
+    animation: beh-astronaut 12s ease-in-out infinite;
+  }
+  .beh-alien {
+    animation: beh-alien 10s ease-in-out infinite;
+  }
+  .beh-eagle {
+    animation: beh-eagle 11s ease-in-out infinite;
+  }
+  .beh-cat {
+    animation: beh-cat 13s ease-in-out infinite;
+  }
+  .beh-human {
+    animation: beh-human 6s ease-in-out infinite;
+  }
+  .beh-dog {
+    animation: beh-dog 9s ease-in-out infinite;
+  }
+  .beh-worm {
+    animation: beh-worm 9s linear infinite;
+  }
+  .beh-magma {
+    animation: beh-magma 5s ease-in-out infinite;
+  }
+
+  /* sub-parts */
+  .alien-wave {
+    animation: crt-wave 2.2s ease-in-out infinite;
+  }
+  .wing-l {
+    animation: crt-flap-l 0.85s ease-in-out infinite;
+  }
+  .wing-r {
+    animation: crt-flap-r 0.85s ease-in-out infinite;
+  }
+  .cat-tail {
+    animation: crt-tail 2.8s ease-in-out infinite;
+  }
+  .think-idea {
+    animation: think-idea 6s ease-in-out infinite;
+  }
+  .dog-head {
+    animation: dog-head 9s ease-in-out infinite;
+  }
+  .dog-mouth {
+    animation: dog-mouth 9s ease-in-out infinite;
+  }
+  .dog-bark {
+    animation: dog-bark 9s ease-in-out infinite;
+  }
+  .dog-wag {
+    animation: crt-wag 0.5s ease-in-out infinite;
+  }
+  .worm-crawl {
+    animation: worm-crawl 1.5s ease-in-out infinite;
+  }
+  .magma-tuft {
+    animation: magma-tuft 1.6s ease-in-out infinite;
+  }
+  .magma-spark {
+    animation: magma-spark 5s ease-in-out infinite;
+  }
+}
+
+/* ---- behaviour reels ---- */
+@keyframes beh-astronaut {
+  /* drift + slow tumble through space */
+  0% { transform: translate(0, 0) rotate(-8deg); }
+  25% { transform: translate(-14px, -6px) rotate(4deg); }
+  50% { transform: translate(6px, -12px) rotate(12deg); }
+  75% { transform: translate(16px, -4px) rotate(2deg); }
+  100% { transform: translate(0, 0) rotate(-8deg); }
+}
+@keyframes beh-alien {
+  /* flies an orbit around the panel corner */
+  0% { transform: translate(0, 0) rotate(-6deg); }
+  25% { transform: translate(-20px, -10px) rotate(6deg); }
+  50% { transform: translate(-4px, -18px) rotate(-4deg); }
+  75% { transform: translate(18px, -8px) rotate(8deg); }
+  100% { transform: translate(0, 0) rotate(-6deg); }
+}
+@keyframes beh-eagle {
+  /* glides across the top line and banks back */
+  0% { transform: translateX(0) translateY(0) scaleX(1); }
+  42% { transform: translateX(-46px) translateY(-4px) scaleX(1); }
+  50% { transform: translateX(-46px) translateY(-4px) scaleX(-1); }
+  92% { transform: translateX(8px) translateY(0) scaleX(-1); }
+  100% { transform: translateX(0) translateY(0) scaleX(1); }
+}
+@keyframes beh-cat {
+  /* sits and grooms, then suddenly sprints across and back */
+  0%, 45% { transform: translateX(0) translateY(0) scaleX(1); }
+  52% { transform: translateX(-44px) translateY(-2px) scaleX(1); }
+  56% { transform: translateX(-44px) translateY(0) scaleX(-1); }
+  64% { transform: translateX(4px) translateY(-2px) scaleX(-1); }
+  68%, 100% { transform: translateX(0) translateY(0) scaleX(1); }
+}
+@keyframes beh-human {
+  /* thoughtful little weight shift + head tilt */
+  0%, 100% { transform: rotate(-1.5deg) translateY(0); }
+  50% { transform: rotate(1.5deg) translateY(-1px); }
+}
+@keyframes beh-dog {
+  /* trots to the bowl, settles to eat, then sits up */
+  0% { transform: translateX(0) scaleX(1); }
+  18% { transform: translateX(-24px) scaleX(1); }
+  20% { transform: translateX(-24px) scaleX(-1); }
+  70% { transform: translateX(-24px) scaleX(-1); }
+  74% { transform: translateX(-24px) scaleX(1); }
+  92%, 100% { transform: translateX(0) scaleX(1); }
+}
+@keyframes beh-worm {
+  /* inch-crawls along the rim and loops back */
+  0% { transform: translateX(-26px); }
+  100% { transform: translateX(26px); }
+}
+@keyframes beh-magma {
+  /* bobs, then squashes and erupts upward */
+  0%, 60% { transform: translateY(0) scaleY(1); }
+  72% { transform: translateY(2px) scaleY(0.8); }
+  82% { transform: translateY(-6px) scaleY(1.12); }
+  92%, 100% { transform: translateY(0) scaleY(1); }
+}
+
+/* ---- sub-part keyframes ---- */
+@keyframes crt-wave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  75% { transform: rotate(28deg); }
+  85% { transform: rotate(10deg); }
+}
+@keyframes crt-flap-l {
+  0%, 100% { transform: rotate(6deg); }
+  50% { transform: rotate(-26deg); }
+}
+@keyframes crt-flap-r {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(26deg); }
+}
+@keyframes crt-tail {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-16deg); }
+}
+@keyframes crt-wag {
+  0%, 100% { transform: rotate(-12deg); }
+  50% { transform: rotate(14deg); }
+}
+@keyframes think-idea {
+  /* idea pops in near the end of the think cycle */
+  0%, 70%, 100% { opacity: 0; transform: scale(0.6); }
+  80%, 92% { opacity: 1; transform: scale(1); }
+}
+@keyframes dog-head {
+  /* head down eating during the settled phase, up otherwise */
+  0%, 22% { transform: translateY(0) rotate(0deg); }
+  30%, 64% { transform: translateY(6px) rotate(8deg); }
+  74%, 100% { transform: translateY(0) rotate(0deg); }
+}
+@keyframes dog-mouth {
+  /* chomps while eating, opens wide on the bark */
+  26%, 60% { transform: scaleY(1.8); }
+  0%, 24%, 62%, 77%, 100% { transform: scaleY(1); }
+  82% { transform: scaleY(2.6); }
+}
+@keyframes dog-bark {
+  0%, 78%, 100% { opacity: 0; transform: translateY(0); }
+  84% { opacity: 1; transform: translateY(-3px); }
+}
+@keyframes worm-crawl {
+  /* accordion squash-stretch */
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  50% { transform: scaleX(0.72) scaleY(1.18); }
+}
+@keyframes magma-tuft {
+  0%, 100% { transform: scaleY(1) rotate(-3deg); }
+  50% { transform: scaleY(1.25) rotate(3deg); }
+}
+@keyframes magma-spark {
+  0%, 70%, 100% { opacity: 0; transform: translateY(0) scale(0.6); }
+  82% { opacity: 1; transform: translateY(-8px) scale(1); }
+  92% { opacity: 0; transform: translateY(-16px) scale(0.4); }
+}
+
+/* =========================================================
+   2D background scenery (crisp, per depth zone)
+   ========================================================= */
+.zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.zone-space { top: 0; height: 24%; }
+.zone-sky { top: 26%; height: 38%; }
+.zone-ground { top: 64%; height: 16%; }
+.zone-under { top: 80%; height: 20%; }
+
+/* ---- space: stars + falling stars ---- */
+.starfield2 {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(2px 2px at 14% 8%, #fff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 5%, rgba(255,255,255,0.85), transparent 60%),
+    radial-gradient(1px 1px at 40% 16%, rgba(255,255,255,0.8), transparent 60%),
+    radial-gradient(2px 2px at 86% 18%, #fff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 22% 28%, rgba(255,255,255,0.8), transparent 60%),
+    radial-gradient(1px 1px at 58% 30%, rgba(255,255,255,0.75), transparent 60%),
+    radial-gradient(2px 2px at 8% 44%, rgba(255,255,255,0.9), transparent 60%),
+    radial-gradient(1px 1px at 76% 42%, rgba(255,255,255,0.8), transparent 60%),
+    radial-gradient(1.5px 1.5px at 46% 54%, #fff, transparent 60%),
+    radial-gradient(1px 1px at 92% 58%, rgba(255,255,255,0.7), transparent 60%),
+    radial-gradient(1.5px 1.5px at 30% 68%, rgba(255,255,255,0.8), transparent 60%),
+    radial-gradient(1px 1px at 64% 74%, rgba(255,255,255,0.7), transparent 60%),
+    radial-gradient(2px 2px at 18% 84%, rgba(255,255,255,0.75), transparent 60%),
+    radial-gradient(1px 1px at 82% 88%, rgba(255,255,255,0.65), transparent 60%);
+}
+.falling-star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.9);
+  opacity: 0;
+}
+.falling-star::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  width: 26px;
+  height: 1.5px;
+  background: linear-gradient(90deg, #fff, transparent);
+  transform-origin: left center;
+  transform: rotate(150deg);
+}
+.fs1 { top: 4%; left: 22%; }
+.fs2 { top: 8%; left: 58%; }
+.fs3 { top: 2%; left: 82%; }
+
+/* ---- sky: clouds + plane ---- */
+.cloud2 {
+  position: absolute;
+  height: 14px;
+  width: 42px;
+  background: #fff;
+  border-radius: 999px;
+  opacity: 0.92;
+  box-shadow:
+    15px -6px 0 -2px #fff,
+    30px -2px 0 -4px #fff,
+    -15px -3px 0 -4px #fff;
+}
+.cl1 { top: 14%; }
+.cl2 { top: 40%; transform: scale(0.78); opacity: 0.8; }
+.cl3 { top: 60%; transform: scale(1.25); }
+.cl4 { top: 28%; transform: scale(0.66); opacity: 0.7; }
+.plane {
+  position: absolute;
+  top: 18%;
+  left: -60px;
+}
+.plane::after {
+  content: "";
+  position: absolute;
+  right: 34px;
+  top: 7px;
+  width: 46px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,0.65) 0 6px, transparent 6px 13px);
+}
+
+/* ---- ground: trees + grass ---- */
+.zone-ground .tree {
+  position: absolute;
+  bottom: 8px;
+}
+.tree-a { left: 5%; }
+.tree-b { left: 58%; bottom: 8px; }
+.tree-c { left: 80%; transform: scale(0.85); }
+.ground-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  background: linear-gradient(180deg, #4a7030, #34571f);
+}
+.grass-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+}
+.grass-row span {
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(180deg, #5fa03f, #3f7a2c);
+  clip-path: polygon(44% 0, 56% 0, 76% 100%, 24% 100%);
+  transform-origin: bottom center;
+}
+
+/* ---- underground: worms + skeletons ---- */
+.dirt-worm { position: absolute; }
+.dw1 { top: 26%; left: 12%; }
+.dw2 { top: 62%; left: 66%; }
+.bones { position: absolute; opacity: 0.92; }
+.bn1 { top: 18%; left: 58%; transform: rotate(-12deg); }
+.bn2 { top: 60%; left: 16%; transform: rotate(9deg) scale(0.82); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .starfield2 { animation: twinkle 5s ease-in-out infinite; }
+  .falling-star { animation: fall 7s ease-in infinite; }
+  .fs2 { animation-duration: 9s; animation-delay: 2.5s; }
+  .fs3 { animation-duration: 6s; animation-delay: 4.5s; }
+  .cl1 { animation: drift2 58s linear infinite; }
+  .cl2 { animation: drift2 80s linear infinite -22s; }
+  .cl3 { animation: drift2 98s linear infinite -52s; }
+  .cl4 { animation: drift2 70s linear infinite -36s; }
+  .plane { animation: fly 24s linear infinite; }
+  .grass-row span { animation: grass-sway 3.6s ease-in-out infinite; }
+  .dw1 { animation: wormwig 4.2s ease-in-out infinite; }
+  .dw2 { animation: wormwig 5.4s ease-in-out infinite -2s; }
+}
+
+@keyframes fall {
+  0% { opacity: 0; transform: translate(0, 0); }
+  4% { opacity: 1; }
+  16% { opacity: 1; }
+  22%, 100% { opacity: 0; transform: translate(-70px, 150px); }
+}
+@keyframes drift2 {
+  from { left: -60px; }
+  to { left: 110%; }
+}
+@keyframes fly {
+  0% { left: -60px; opacity: 0; }
+  4% { opacity: 1; }
+  44% { opacity: 1; }
+  50%, 100% { left: 112%; opacity: 0; }
+}
+@keyframes grass-sway {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+@keyframes wormwig {
+  0%, 100% { transform: translateX(0) rotate(-3deg); }
+  50% { transform: translateX(9px) rotate(3deg); }
+}
+
+/* =========================================================
+   Depth / 3D realism for the scenery
+   ========================================================= */
+/* sun + atmosphere */
+.sun {
+  position: absolute;
+  top: 8%;
+  right: 12%;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #fff7da, #ffe49a 42%, rgba(255, 228, 154, 0) 72%);
+}
+.haze {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  background: linear-gradient(180deg, transparent, rgba(222, 236, 212, 0.55));
+}
+/* parallax hills at the horizon */
+.hill {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+}
+.hill-back {
+  bottom: 8px;
+  height: 38px;
+  background: linear-gradient(180deg, #8fb6bc, #6f9aa0);
+  opacity: 0.55;
+  clip-path: ellipse(60% 100% at 45% 100%);
+  transform: scaleX(1.3);
+}
+.hill-mid {
+  bottom: 0;
+  height: 46px;
+  background: linear-gradient(180deg, #66975a, #4e7e44);
+  clip-path: ellipse(58% 100% at 60% 100%);
+}
+
+/* clouds: top-lit, shaded underside for volume */
+.cloud2 {
+  background: linear-gradient(180deg, #ffffff 55%, #dfe8f2 100%);
+  box-shadow:
+    15px -6px 0 -2px #ffffff,
+    30px -2px 0 -4px #f2f6fb,
+    -15px -3px 0 -4px #eef3f9;
+}
+
+/* receding 3D ground floor */
+.ground-plane {
+  position: absolute;
+  left: -35%;
+  right: -35%;
+  bottom: 0;
+  height: 240%;
+  background: linear-gradient(180deg, #79b154 0%, #4e8a36 45%, #386b27 100%);
+  transform: perspective(170px) rotateX(62deg);
+  transform-origin: bottom center;
+}
+.ground-furrows {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 2px, transparent 2px 46px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 30px);
+}
+
+/* far trees sit near the horizon, hazy + small */
+.tree-far {
+  bottom: auto;
+  top: 0;
+  opacity: 0.72;
+  filter: saturate(0.78) brightness(1.02);
+  transform: scale(0.5);
+}
+.tree-f1 { left: 22%; }
+.tree-f2 { left: 46%; }
+
+/* two grass rows for depth */
+.grass-back {
+  bottom: 13px;
+  height: 13px;
+  opacity: 0.78;
+  filter: brightness(0.9);
+}
+.grass-back span { width: 4px; }
+.grass-front {
+  bottom: 3px;
+  height: 22px;
+}
+.grass-front span { width: 6px; }
+
+/* layered rock underground */
+.rock-strata {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #5c4a2c 0%, #4a3320 32%, #38271a 66%, #2a1b11 100%);
+}
+.rock-strata::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(2deg, rgba(0, 0, 0, 0.18) 0 3px, transparent 3px 28px),
+    radial-gradient(3px 3px at 20% 30%, rgba(0, 0, 0, 0.25), transparent 60%),
+    radial-gradient(4px 4px at 70% 55%, rgba(0, 0, 0, 0.2), transparent 60%),
+    radial-gradient(3px 3px at 40% 78%, rgba(0, 0, 0, 0.22), transparent 60%);
 }

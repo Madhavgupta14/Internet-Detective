@@ -18,6 +18,7 @@ export type LinkedInProfile = {
   extractedAt: string;
   name: string;
   headline: string;
+  photoUrl?: string;
   location?: string;
   currentRole?: string;
   currentCompany?: string;

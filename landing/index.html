@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Spectra — LinkedIn intelligence, from the surface to the core</title>
+    <meta
+      name="description"
+      content="Spectra turns public LinkedIn profiles into structured intelligence and ready-to-send outreach. Deterministic scoring runs locally in your browser. No tracking."
+    />
+    <meta name="theme-color" content="#05060f" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Spectra — LinkedIn intelligence" />
+    <meta
+      property="og:description"
+      content="From the surface to the core. Read the signal in any LinkedIn profile, then reach out with words that land."
+    />
+    <meta property="og:image" content="/assets/icons/icon-128.png" />
+
+    <link rel="icon" type="image/png" sizes="128x128" href="/assets/icons/icon-128.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/icon-32.png" />
+    <link rel="apple-touch-icon" href="/assets/icons/icon-128.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- ===================== NAV ===================== -->
+    <header class="nav" id="nav">
+      <a class="nav__brand" href="#top" aria-label="Spectra home">
+        <img class="nav__logo" src="/assets/icons/icon-48.png" alt="" width="28" height="28" />
+        <span class="nav__name">Spectra</span>
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#privacy">Privacy</a>
+      </nav>
+      <a class="btn btn--primary nav__cta" href="#cta" data-install>Add to Chrome</a>
+    </header>
+
+    <!-- progress rail showing descent through the layers -->
+    <div class="depth-rail" aria-hidden="true">
+      <span class="depth-rail__fill" id="depthFill"></span>
+      <ul class="depth-rail__ticks">
+        <li data-layer="space">Space</li>
+        <li data-layer="sky">Sky</li>
+        <li data-layer="land">Land</li>
+        <li data-layer="soil">Soil</li>
+        <li data-layer="core">Core</li>
+      </ul>
+    </div>
+
+    <main id="top">
+      <!-- ===================== SPACE / HERO ===================== -->
+      <section class="layer layer--space" id="hero" data-layer="space">
+        <canvas class="starfield" id="starfield" aria-hidden="true"></canvas>
+        <div class="space__nebula" aria-hidden="true"></div>
+        <div class="shooting-star" aria-hidden="true"></div>
+
+        <div class="wrap hero">
+          <div class="hero__copy reveal">
+            <span class="eyebrow">LinkedIn intelligence</span>
+            <h1 class="hero__title">
+              Read the signal<br />
+              from the <span class="grad">surface to the core</span>.
+            </h1>
+            <p class="hero__sub">
+              Spectra turns any public LinkedIn profile into structured intelligence and
+              ready-to-send outreach. The scoring runs locally in your browser — no account
+              required, no tracking, ever.
+            </p>
+            <div class="hero__actions">
+              <a class="btn btn--primary btn--lg" href="#cta" data-install>Add to Chrome — it's free</a>
+              <a class="btn btn--ghost btn--lg" href="#how">See how it works</a>
+            </div>
+            <p class="hero__trust">
+              <span class="dot"></span> Local-first scoring · Hosted or fully-private LLM · Zero
+              analytics
+            </p>
+          </div>
+
+          <!-- product panel mock -->
+          <div class="hero__panel reveal" id="panelMock">
+            <div class="panel">
+              <div class="panel__chrome">
+                <img src="/assets/icons/icon-32.png" alt="" width="18" height="18" />
+                <span>Spectra</span>
+                <span class="panel__chrome-dots"><i></i><i></i><i></i></span>
+              </div>
+
+              <div class="panel__body">
+                <div class="panel__profile">
+                  <div class="character" aria-hidden="true" data-character data-gender="male">
+                    <div class="character__halo"></div>
+                  </div>
+                  <div class="panel__id">
+                    <h3>Sandeep Jain</h3>
+                    <p>2nd · Founder — GeeksforGeeks</p>
+                  </div>
+                </div>
+
+                <!-- de-emphasised meta strip -->
+                <div class="panel__meta" aria-label="Run details">
+                  <span><b>74%</b> Extraction</span>
+                  <span><b>9</b> Evidence</span>
+                  <span><b>llama-3.3-70b</b> Model</span>
+                </div>
+
+                <div class="panel__focus-label"><span class="ic-ring"></span> Signal focus</div>
+                <div class="panel__cards">
+                  <div class="scard">
+                    <div class="scard__top"><span>Decision</span><em class="tag tag--high">High</em></div>
+                    <strong>96</strong>
+                    <div class="bar"><i style="--w: 96%"></i></div>
+                  </div>
+                  <div class="scard">
+                    <div class="scard__top"><span>Founder</span><em class="tag tag--high">High</em></div>
+                    <strong>97</strong>
+                    <div class="bar"><i style="--w: 97%"></i></div>
+                  </div>
+                  <div class="scard scard--focus">
+                    <div class="scard__top"><span>Hiring</span><em class="tag tag--mid">Medium</em></div>
+                    <strong>46</strong>
+                    <div class="bar bar--mid"><i style="--w: 46%"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a class="scroll-cue" href="#features" aria-label="Scroll down">
+          <span></span> Descend
+        </a>
+      </section>
+
+      <!-- ===================== STRATOSPHERE / SKY ===================== -->
+      <section class="layer layer--sky" id="features" data-layer="sky">
+        <div class="clouds" aria-hidden="true">
+          <span class="cloud cloud--1"></span>
+          <span class="cloud cloud--2"></span>
+          <span class="cloud cloud--3"></span>
+          <span class="cloud cloud--4"></span>
+        </div>
+
+        <div class="wrap">
+          <header class="sec-head reveal">
+            <span class="eyebrow eyebrow--dark">What Spectra does</span>
+            <h2>Three layers of signal, one click.</h2>
+            <p>
+              Every profile is read top-down — who they are, how to reach them, and where to send
+              it. Each layer is its own tool, and they share the same evidence.
+            </p>
+          </header>
+
+          <div class="features">
+            <article class="feature reveal">
+              <div class="feature__icon feature__icon--analyze" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 4.9 12l4.3 4.3 1.4-1.4-4.3-4.3A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/></svg>
+              </div>
+              <h3>Analyze</h3>
+              <p>
+                Deterministic scoring runs locally and grades the profile across decision power,
+                founder signal, and hiring intent — each backed by the exact lines of evidence it
+                pulled from the page.
+              </p>
+              <ul class="feature__list">
+                <li>Runs in the browser, always</li>
+                <li>Evidence you can click into</li>
+                <li>No profile leaves your machine for scoring</li>
+              </ul>
+            </article>
+
+            <article class="feature reveal">
+              <div class="feature__icon feature__icon--outreach" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M2 4l20 8-20 8 4-8-4-8zm5.5 8L4.8 7.3 16 12 4.8 16.7 7.5 12z"/></svg>
+              </div>
+              <h3>Outreach</h3>
+              <p>
+                Turn the read into a message. Spectra drafts resume-aware outreach that references
+                real signal from the profile — not generic templates — so the first line actually
+                lands.
+              </p>
+              <ul class="feature__list">
+                <li>Grounded in extracted evidence</li>
+                <li>Tunes to your résumé &amp; angle</li>
+                <li>Hosted or fully-local generation</li>
+              </ul>
+            </article>
+
+            <article class="feature reveal">
+              <div class="feature__icon feature__icon--email" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1.4 2L12 12.3 19.6 7H4.4zM20 8.9l-8 5.6-8-5.6V17h16V8.9z"/></svg>
+              </div>
+              <h3>Email finder</h3>
+              <p>
+                Surface the most likely work email from name and company patterns, with optional
+                Hunter.io verification when you want a confidence score before you hit send.
+              </p>
+              <ul class="feature__list">
+                <li>Pattern-based, instant</li>
+                <li>Optional verification</li>
+                <li>Copy-ready in one tap</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== LAND / HOW IT WORKS ===================== -->
+      <section class="layer layer--land" id="how" data-layer="land">
+        <div class="leaves" aria-hidden="true"></div>
+        <div class="grass" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+
+        <div class="wrap">
+          <header class="sec-head reveal">
+            <span class="eyebrow eyebrow--dark">How it works</span>
+            <h2>Surface to core, in four steps.</h2>
+            <p>You stay on the profile. Spectra reads what's already on the page.</p>
+          </header>
+
+          <ol class="steps">
+            <li class="step reveal">
+              <span class="step__n">01</span>
+              <h3>Open a profile</h3>
+              <p>Pin Spectra and click <em>Analyze</em> on any public LinkedIn profile you're viewing.</p>
+            </li>
+            <li class="step reveal">
+              <span class="step__n">02</span>
+              <h3>Read the signal</h3>
+              <p>Local scoring grades the profile and shows the evidence behind every number.</p>
+            </li>
+            <li class="step reveal">
+              <span class="step__n">03</span>
+              <h3>Draft the reach</h3>
+              <p>Generate outreach that quotes the real signal, tuned to your résumé and goal.</p>
+            </li>
+            <li class="step reveal">
+              <span class="step__n">04</span>
+              <h3>Find the email</h3>
+              <p>Surface the likely work email, verify if you want, copy, and send.</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ===================== SOIL / PRIVACY ===================== -->
+      <section class="layer layer--soil" id="privacy" data-layer="soil">
+        <div class="worms" aria-hidden="true">
+          <span class="worm worm--1"></span>
+          <span class="worm worm--2"></span>
+          <span class="worm worm--3"></span>
+        </div>
+        <div class="roots" aria-hidden="true"></div>
+
+        <div class="wrap">
+          <header class="sec-head sec-head--light reveal">
+            <span class="eyebrow eyebrow--light">Privacy by architecture</span>
+            <h2>The scoring never leaves your browser.</h2>
+            <p>
+              Spectra is local-first by design. Deterministic extraction and scoring always run in
+              the extension. Written insight is the only thing that can touch an LLM — and you choose
+              which one.
+            </p>
+          </header>
+
+          <div class="privacy">
+            <div class="priv-card reveal">
+              <h3>Local scoring, always</h3>
+              <p>Signal extraction and grading run entirely in the browser. No profile is sent anywhere to be scored.</p>
+            </div>
+            <div class="priv-card reveal">
+              <h3>You pick the brain</h3>
+              <p>
+                Use the hosted endpoint for zero-setup quality, or point Spectra at a local Ollama
+                model for fully-private generation that never leaves your machine.
+              </p>
+            </div>
+            <div class="priv-card reveal">
+              <h3>No analytics, no tracking</h3>
+              <p>Spectra ships with zero telemetry. Your data stays in local IndexedDB on your device.</p>
+            </div>
+            <div class="priv-card reveal">
+              <h3>No secrets in the client</h3>
+              <p>The hosted proxy holds the API key server-side — nothing sensitive is ever bundled into the extension.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== CORE / CTA ===================== -->
+      <section class="layer layer--core" id="cta" data-layer="core">
+        <div class="core-glow" aria-hidden="true"></div>
+        <div class="embers" aria-hidden="true"></div>
+
+        <div class="wrap cta">
+          <div class="reveal">
+            <img class="cta__logo" src="/assets/icons/icon-128.png" alt="Spectra" width="76" height="76" />
+            <h2>You've reached the core.</h2>
+            <p>
+              Every LinkedIn profile is hiding structure. Spectra surfaces it, grounds your outreach
+              in it, and keeps the whole thing on your machine.
+            </p>
+            <div class="cta__actions">
+              <a class="btn btn--primary btn--lg" href="#top" data-install>Add Spectra to Chrome</a>
+              <a class="btn btn--ghost-light btn--lg" href="#features">Explore features</a>
+            </div>
+          </div>
+        </div>
+
+        <footer class="footer">
+          <div class="wrap footer__inner">
+            <div class="footer__brand">
+              <img src="/assets/icons/icon-32.png" alt="" width="20" height="20" />
+              <span>Spectra</span>
+              <span class="footer__tag">LinkedIn intelligence</span>
+            </div>
+            <nav class="footer__links" aria-label="Footer">
+              <a href="#features">Features</a>
+              <a href="#how">How it works</a>
+              <a href="#privacy">Privacy</a>
+            </nav>
+            <p class="footer__copy">© <span id="year">2026</span> Spectra. Local-first. No tracking.</p>
+          </div>
+        </footer>
+      </section>
+    </main>
+
+    <script src="/main.js" defer></script>
+  </body>
+</html>

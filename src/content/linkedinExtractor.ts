@@ -296,6 +296,32 @@ function extractFollowers(): number | undefined {
   return Math.round(value);
 }
 
+function extractPhotoUrl(name: string): string | undefined {
+  const root = profileMainRoot();
+  const firstName = name.split(/\s+/)[0] ?? "";
+
+  const candidates: HTMLImageElement[] = [
+    ...Array.from(root.querySelectorAll<HTMLImageElement>("img.pv-top-card-profile-picture__image")),
+    ...Array.from(root.querySelectorAll<HTMLImageElement>("img.profile-photo-edit__preview")),
+    ...Array.from(root.querySelectorAll<HTMLImageElement>('img[width="200"], img[width="100"]')),
+    ...Array.from(root.querySelectorAll<HTMLImageElement>("img"))
+  ];
+
+  for (const img of candidates) {
+    const src = img.currentSrc || img.src || "";
+    if (!src || !/^https?:/i.test(src) || src.startsWith("data:")) {
+      continue;
+    }
+    // LinkedIn member photos are served from licdn profile-displayphoto paths.
+    const isMemberPhoto = /licdn\.com/i.test(src) && /(profile-displayphoto|profile-framedphoto)/i.test(src);
+    const altMatchesName = firstName && new RegExp(firstName.replace(/[^a-z]/gi, ""), "i").test(img.alt || "");
+    if (isMemberPhoto || altMatchesName) {
+      return src;
+    }
+  }
+  return undefined;
+}
+
 function confidenceFor(profile: Omit<LinkedInProfile, "extractionConfidence">): number {
   let confidence = 15;
   if (profile.name) confidence += 18;
@@ -322,6 +348,7 @@ export function extractLinkedInProfile(): LinkedInProfile {
     extractedAt: new Date().toISOString(),
     name,
     headline,
+    photoUrl: extractPhotoUrl(name),
     location: extractLocation(),
     currentRole: roleCompany.role || currentFromExperience.role,
     currentCompany: roleCompany.company || currentFromExperience.company,

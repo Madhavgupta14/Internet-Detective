@@ -1,10 +1,13 @@
-import { AtSign, BriefcaseBusiness, ChevronDown, FileText, Gauge, Loader2, LogOut, Mail, MessageSquare, RefreshCw, Search, Sparkles, Target, Upload, UserRound, X } from "lucide-react";
+import { AtSign, BriefcaseBusiness, ChevronDown, FileText, Loader2, LogOut, Mail, MessageSquare, RefreshCw, Search, Sparkles, Target, Upload, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { AuthState, EmailResult, LinkedInAnalysis, OutreachSuggestions, ScoreResult } from "../../shared/types";
 import type { EmailFinderResult } from "../../background/emailFinder";
 import "../shared/index.css";
 import { Button, CopyButton, EmptyState, StatusLine } from "../shared/components";
+import { ProfileCharacterFull } from "../shared/avatar";
+import { SectionCreature } from "../shared/creatures";
+import { PanelScenery } from "../shared/scenery";
 import { sendMessage } from "../shared/runtime";
 import { parseResumeFile, summarizeResume, type ParsedResume } from "../../intelligence/resume/resumeParser";
 import { getLatestResume, saveResume, type StoredResume } from "../../storage/db";
@@ -51,39 +54,41 @@ function scoreMeaning(key: FocusKey, value: number): string {
   return band === "High" ? "Visible hiring motion." : band === "Medium" ? "Possible hiring context." : "No clear hiring scope.";
 }
 
-function ScoreTile({
-  active,
-  label,
-  score,
-  onClick
-}: {
-  active: boolean;
-  label: FocusKey;
-  score: ScoreResult;
-  onClick: () => void;
-}) {
+function ProfileAvatar({ name }: { name: string }) {
+  return (
+    <div className="character-3d relative shrink-0" aria-hidden="true">
+      <div className="character-3d__float">
+        <ProfileCharacterFull name={name} height={188} />
+      </div>
+    </div>
+  );
+}
+
+function ScoreRow({ label, score, active, onClick }: { label: FocusKey; score: ScoreResult; active: boolean; onClick: () => void }) {
   const meta = scoreMeta[label];
   const band = scoreBand(score.value);
   const Icon = meta.icon;
 
   return (
     <button
-      className={`grid min-h-28 rounded-xl border bg-white p-3 text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-panel ${
-        active ? "border-brand-500 ring-1 ring-brand-500/30 shadow-panel" : "border-ink/10"
+      className={`flex items-center gap-3 rounded-xl border bg-white/85 px-3 py-2 text-left backdrop-blur transition hover:-translate-y-0.5 hover:shadow-soft ${
+        active ? "border-brand-500 ring-1 ring-brand-500/30 shadow-soft" : "border-ink/10"
       }`}
       onClick={onClick}
       type="button"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <Icon className="h-4 w-4 shrink-0 text-signal" />
+      <Icon className="h-4 w-4 shrink-0 text-signal" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-2">
           <span className="truncate text-xs font-semibold text-ink/70">{meta.shortLabel}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-bold tabular-nums">{score.value}</span>
+            <span className={`rounded px-1 py-0.5 text-[9px] font-semibold ${band.className}`}>{band.label}</span>
+          </div>
         </div>
-        <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${band.className}`}>{band.label}</span>
-      </div>
-      <div className="mt-3 text-2xl font-semibold tabular-nums">{score.value}</div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10">
-        <div className={`h-full rounded-full ${band.barClassName}`} style={{ width: `${score.value}%` }} />
+        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink/10">
+          <div className={`h-full rounded-full ${band.barClassName}`} style={{ width: `${score.value}%` }} />
+        </div>
       </div>
     </button>
   );
@@ -94,7 +99,7 @@ function FocusPanel({ label, score }: { label: FocusKey; score: ScoreResult }) {
   const usefulFactors = score.factors.filter((factor) => factor.impact > 0);
 
   return (
-    <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
+    <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold">{meta.label}</h2>
@@ -154,7 +159,7 @@ function OutreachPanel({ outreach, selected, onSelect }: { outreach: OutreachSug
   const meta = outreachMeta[selected];
 
   return (
-    <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
+    <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
       <div className="grid grid-cols-3 gap-2">
         {(Object.keys(outreachMeta) as OutreachKey[]).map((key) => {
           const item = outreachMeta[key];
@@ -314,7 +319,7 @@ function ProfileOutreachBuilder({
   }
 
   return (
-    <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
+    <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold">Profile outreach builder</h2>
@@ -469,7 +474,7 @@ function EmailFinderPanel({
   const noFreeLeft = limited && usesRemaining === 0;
 
   return (
-    <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
+    <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <AtSign className="h-4 w-4 text-signal" />
@@ -608,8 +613,9 @@ function SidePanel() {
   const logoUrl = chrome.runtime.getURL("icons/icon-128.png");
 
   return (
-    <main className="min-h-screen text-ink">
-      <header className="sticky top-0 z-10 brand-gradient px-4 py-4 text-white shadow-panel">
+    <main className="panel-descent relative min-h-screen text-ink">
+      <PanelScenery />
+      <header className="relative z-10 brand-gradient px-4 py-4 text-white shadow-panel">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <img alt="Spectra" className="h-9 w-9 shrink-0 rounded-xl bg-white p-1 shadow-soft" src={logoUrl} />
@@ -662,105 +668,107 @@ function SidePanel() {
         </div>
       </header>
 
-      <div className="px-4 py-4">
+      <div className="relative z-10 px-4 py-4">
         <StatusLine status={busy ? "extracting" : analysis?.status} error={displayError} />
       </div>
 
       {!analysis ? (
-        <div className="px-4">
+        <div className="relative z-10 px-4">
           <EmptyState text="Open a LinkedIn profile and run analysis to build the first local intelligence report." />
         </div>
       ) : (
-        <div className="space-y-4 px-4 pb-8">
-          <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
-            <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-gradient text-base font-semibold text-white shadow-soft">
-                {(analysis.profile.name || "L").slice(0, 1)}
-              </div>
-              <div className="min-w-0">
-                <h2 className="truncate text-xl font-semibold">{analysis.profile.name || "LinkedIn profile"}</h2>
-                <p className="mt-1 line-clamp-2 text-sm leading-5 text-ink/65">{analysis.profile.headline || "No headline extracted."}</p>
+        <div className="relative z-10 space-y-4 px-4 pb-8">
+          <section className="relative px-1 pt-1 pb-2">
+            <SectionCreature kind="astronaut" position="right" offsetTop={-8} />
+            <SectionCreature kind="alien" position="left" offsetTop={-10} delay={1.1} />
+            <div className="flex items-center gap-3">
+              <ProfileAvatar name={analysis.profile.name} />
+              <div className="grid flex-1 gap-2">
+                <ScoreRow active={focus === "decisionMaker"} label="decisionMaker" onClick={() => setFocus("decisionMaker")} score={analysis.scores.decisionMaker} />
+                <ScoreRow active={focus === "founder"} label="founder" onClick={() => setFocus("founder")} score={analysis.scores.founder} />
+                <ScoreRow active={focus === "hiringIntent"} label="hiringIntent" onClick={() => setFocus("hiringIntent")} score={analysis.scores.hiringIntent} />
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-md bg-paper px-2 py-2">
-                <div className="font-semibold text-ink">{analysis.profile.extractionConfidence}%</div>
-                <div className="mt-0.5 text-ink/45">Extraction</div>
-              </div>
-              <div className="rounded-md bg-paper px-2 py-2">
-                <div className="font-semibold text-ink">{analysis.signals.evidence.length}</div>
-                <div className="mt-0.5 text-ink/45">Evidence</div>
-              </div>
-              <div className="rounded-md bg-paper px-2 py-2">
-                <div className="truncate font-semibold text-ink">{analysis.insight?.model ?? "local"}</div>
-                <div className="mt-0.5 text-ink/45">Model</div>
-              </div>
+            <div className="mt-3">
+              <h2 className="truncate text-xl font-semibold text-white drop-shadow">{analysis.profile.name || "LinkedIn profile"}</h2>
+              <p className="mt-1 line-clamp-2 text-sm leading-5 text-white/75">{analysis.profile.headline || "No headline extracted."}</p>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-medium uppercase tracking-wide text-white/40">
+              <span>{analysis.profile.extractionConfidence}% extracted</span>
+              <span aria-hidden="true">·</span>
+              <span>{analysis.signals.evidence.length} signals</span>
+              <span aria-hidden="true">·</span>
+              <span className="truncate normal-case tracking-normal">{analysis.insight?.model ?? "local"}</span>
             </div>
           </section>
 
-          <section>
-            <div className="mb-2 flex items-center gap-2">
-              <Gauge className="h-4 w-4 text-signal" />
-              <h2 className="text-sm font-semibold">Signal focus</h2>
+          {focusedScore ? (
+            <div className="relative">
+              <SectionCreature kind="eagle" position="right" />
+              <FocusPanel label={focus} score={focusedScore} />
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <ScoreTile active={focus === "decisionMaker"} label="decisionMaker" onClick={() => setFocus("decisionMaker")} score={analysis.scores.decisionMaker} />
-              <ScoreTile active={focus === "founder"} label="founder" onClick={() => setFocus("founder")} score={analysis.scores.founder} />
-              <ScoreTile active={focus === "hiringIntent"} label="hiringIntent" onClick={() => setFocus("hiringIntent")} score={analysis.scores.hiringIntent} />
-            </div>
-          </section>
+          ) : null}
 
-          {focusedScore ? <FocusPanel label={focus} score={focusedScore} /> : null}
+          <div className="relative">
+            <SectionCreature kind="cat" position="right" />
+            <section className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
+              <h2 className="text-sm font-semibold">Hiring and skills</h2>
+              <div className="mt-3 grid gap-4">
+                <SignalList
+                  empty="No explicit hiring role, team, or open-role scope was extracted from visible profile text."
+                  label="Hiring scope"
+                  values={analysis.signals.hiringScope}
+                />
+                <SignalList
+                  empty="No clear skill requirements were extracted from visible profile text."
+                  label="Skill signals"
+                  values={analysis.signals.skillSignals}
+                />
+              </div>
+            </section>
+          </div>
 
-          <section className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
-            <h2 className="text-sm font-semibold">Hiring and skills</h2>
-            <div className="mt-3 grid gap-4">
-              <SignalList
-                empty="No explicit hiring role, team, or open-role scope was extracted from visible profile text."
-                label="Hiring scope"
-                values={analysis.signals.hiringScope}
-              />
-              <SignalList
-                empty="No clear skill requirements were extracted from visible profile text."
-                label="Skill signals"
-                values={analysis.signals.skillSignals}
-              />
-            </div>
-          </section>
+          <div className="relative">
+            <SectionCreature kind="human" position="left" />
+            <details className="rounded-xl border border-white/45 bg-white/70 p-4 shadow-panel backdrop-blur-sm">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold">Insights</h2>
+                <ChevronDown className="h-4 w-4 text-ink/45" />
+              </summary>
+              <p className="mt-3 text-sm leading-6 text-ink/75">
+                {analysis.insight?.summary ?? "Scores were calculated locally from visible LinkedIn profile signals. Start Ollama and enable local LLM generation in Settings to add a written explanation and outreach copy."}
+              </p>
+            </details>
+          </div>
 
-          <details className="rounded-xl border border-ink/10 bg-white p-4 shadow-panel">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold">Insights</h2>
-              <ChevronDown className="h-4 w-4 text-ink/45" />
-            </summary>
-            <p className="mt-3 text-sm leading-6 text-ink/75">
-              {analysis.insight?.summary ?? "Scores were calculated locally from visible LinkedIn profile signals. Start Ollama and enable local LLM generation in Settings to add a written explanation and outreach copy."}
-            </p>
-          </details>
-
-          <section>
-            <div className="mb-2 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-signal" />
+          <section className="relative">
+            <SectionCreature kind="dog" position="right" offsetTop={-22} />
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-ink/55 px-3 py-1 text-white shadow-soft backdrop-blur">
+              <Sparkles className="h-4 w-4" />
               <h2 className="text-sm font-semibold">Outreach</h2>
             </div>
             <ProfileOutreachBuilder analysis={analysis} authBusy={authBusy} onGenerated={setAnalysis} onSignIn={signIn} signedIn={signedIn} />
           </section>
 
-          <section>
-            <div className="mb-2 flex items-center gap-2">
-              <Mail className="h-4 w-4 text-signal" />
+          <section className="relative">
+            <SectionCreature kind="worm" position="left" offsetTop={-10} delay={0.6} />
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-ink/55 px-3 py-1 text-white shadow-soft backdrop-blur">
+              <Mail className="h-4 w-4" />
               <h2 className="text-sm font-semibold">Generated copy</h2>
             </div>
             <OutreachPanel onSelect={setOutreachTab} outreach={outreach} selected={outreachTab} />
           </section>
 
-          <EmailFinderPanel
-            auth={auth}
-            authBusy={authBusy}
-            domain={analysis.profile.currentCompany ?? ""}
-            name={analysis.profile.name}
-            onSignIn={signIn}
-          />
+          <div className="relative">
+            <SectionCreature kind="magma" position="right" offsetTop={-12} delay={0.3} />
+            <EmailFinderPanel
+              auth={auth}
+              authBusy={authBusy}
+              domain={analysis.profile.currentCompany ?? ""}
+              name={analysis.profile.name}
+              onSignIn={signIn}
+            />
+          </div>
         </div>
       )}
     </main>
