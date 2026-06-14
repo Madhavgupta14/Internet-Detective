@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Spectra — Privacy Policy</title>
+    <meta name="description" content="How the Spectra Chrome extension handles your data. Local-first, no tracking." />
+    <link rel="icon" type="image/png" sizes="128x128" href="/assets/icons/icon-128.png" />
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: #1e293b;
+        background: #f7f9fc;
+        line-height: 1.65;
+      }
+      .wrap { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+      header.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+      header.brand img { width: 32px; height: 32px; border-radius: 8px; }
+      header.brand b { font-size: 18px; letter-spacing: -0.02em; color: #0f172a; }
+      h1 { font-size: 30px; letter-spacing: -0.02em; color: #0f172a; margin: 0 0 6px; }
+      .updated { color: #64748b; font-size: 14px; margin: 0 0 32px; }
+      h2 { font-size: 19px; letter-spacing: -0.01em; color: #0f172a; margin: 30px 0 8px; }
+      p, li { font-size: 15.5px; color: #334155; }
+      ul { padding-left: 22px; }
+      li { margin: 4px 0; }
+      a { color: #2563eb; }
+      code { background: #eef2f8; padding: 1px 6px; border-radius: 6px; font-size: 13.5px; }
+      .note { background: #eef4ff; border: 1px solid #dbe8fe; border-radius: 12px; padding: 14px 18px; margin: 24px 0; }
+      footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="brand">
+        <img src="/assets/icons/icon-128.png" alt="" />
+        <b>Spectra</b>
+      </header>
+
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: June 15, 2026</p>
+
+      <p>
+        Spectra is a Chrome extension that turns public LinkedIn profiles into structured
+        intelligence and outreach drafts. It is built to be local-first: the analysis happens in
+        your browser, and we do not run analytics or track you. This page explains exactly what is
+        processed and where.
+      </p>
+
+      <div class="note">
+        <strong>In short:</strong> profile scoring runs entirely on your device. The only data that
+        leaves your browser is the text we send to an AI model to write insights/outreach (only if
+        you enable that), and the name + company you submit to look up an email. We store nothing on
+        our servers except an anonymous per-account counter for free email lookups. No analytics, no
+        ads, no selling of data.
+      </div>
+
+      <h2>What stays on your device</h2>
+      <ul>
+        <li><strong>Profile extraction &amp; scoring.</strong> When you click Analyze, the extension reads the text already visible on the LinkedIn profile page and computes the signal scores locally. This raw scoring never leaves your browser.</li>
+        <li><strong>Your data.</strong> Analyses, settings, and any résumé you upload are stored locally in your browser's IndexedDB. You can clear all of it any time from the extension's Settings ("Delete all data").</li>
+      </ul>
+
+      <h2>What is sent off your device — and to whom</h2>
+      <ul>
+        <li><strong>AI-written insight &amp; outreach (optional).</strong> If AI generation is enabled, the extension sends a prompt containing the extracted profile facts (and, for résumé-aware outreach, your résumé text) to generate the summary and drafts. You choose the backend:
+          <ul>
+            <li><em>Hosted (default):</em> the prompt goes to our proxy at <code>internet-detective-proxy.vercel.app</code>, which forwards it to <strong>Groq</strong> (Llama 3.3 70B). We do not store these prompts or responses.</li>
+            <li><em>Local Ollama:</em> the prompt is sent only to a model running on your own machine and never leaves it.</li>
+          </ul>
+        </li>
+        <li><strong>Email finder (optional).</strong> To find a work email, the extension sends the target's first name, last name, and company domain — either directly to <strong>Hunter.io</strong> using your own API key, or through our proxy (which uses a shared key and enforces a free per-account limit). We do not store the looked-up emails.</li>
+        <li><strong>Google sign-in.</strong> Outreach generation and free email lookups require signing in with Google. We receive your Google account ID and email to authenticate you and to count your free lookups. Sign-in is handled by Chrome's secure identity system; we never see your password.</li>
+      </ul>
+
+      <h2>What we store on our servers</h2>
+      <ul>
+        <li>An anonymous counter keyed to your Google account ID, used only to enforce the free email-lookup limit. No profile data, prompts, résumés, or generated content are stored on our servers.</li>
+      </ul>
+
+      <h2>Third-party services</h2>
+      <p>When you use the relevant features, data is processed by these providers under their own privacy policies:</p>
+      <ul>
+        <li>Groq — <a href="https://groq.com/privacy-policy/" target="_blank" rel="noopener">groq.com/privacy-policy</a> (AI generation, hosted mode)</li>
+        <li>Hunter.io — <a href="https://hunter.io/privacy" target="_blank" rel="noopener">hunter.io/privacy</a> (email lookup)</li>
+        <li>Google — <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a> (sign-in)</li>
+      </ul>
+
+      <h2>What we do NOT do</h2>
+      <ul>
+        <li>No analytics or usage tracking.</li>
+        <li>No advertising.</li>
+        <li>No selling or sharing of your data with third parties for their own purposes.</li>
+        <li>No storing of profiles, prompts, résumés, generated text, or found emails on our servers.</li>
+      </ul>
+
+      <h2>Your control</h2>
+      <ul>
+        <li>Delete all local data any time via the extension's Settings.</li>
+        <li>Sign out to revoke the extension's Google access.</li>
+        <li>Use Local Ollama mode to keep AI generation entirely on your machine.</li>
+      </ul>
+
+      <h2>Changes</h2>
+      <p>If this policy changes, we'll update the date above. Material changes will be reflected here before they take effect.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about privacy? Reach us through the support contact on our Chrome Web Store listing.</p>
+
+      <footer>
+        <a href="/">← Back to Spectra</a>
+      </footer>
+    </div>
+  </body>
+</html>
