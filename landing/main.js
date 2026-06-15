@@ -33,50 +33,6 @@
   });
 
   /* ---------------------------------------------------------
-     0b. Gender-aware character avatar (data-driven)
-        <div data-character data-gender="male|female"></div>
-     A stylized stand-in for the planned 3D Pixar-style render.
-     --------------------------------------------------------- */
-  const buildAvatar = (gender) => {
-    const female = gender === "female";
-    const uid = "c" + (female ? "f" : "m");
-    const hair = female ? "#5a3a22" : "#3b2a1a";
-    const collar = female ? "#1d4ed8" : "#1e40af";
-    // longer hair frames the face on the female variant
-    const hairShape = female
-      ? `<path d="M27 44c-3-16 6-26 21-26s24 10 21 26c-2-2-4-3-6-3 2-9-4-16-15-16s-17 7-15 16c-2 0-4 1-6 3z" fill="${hair}"/>
-         <path d="M28 42c-2 8-2 16 0 24l5-2c-2-8-2-15-1-22zM68 42c2 8 2 16 0 24l-5-2c2-8 2-15 1-22z" fill="${hair}"/>`
-      : `<path d="M31 40a17 17 0 0 1 34 0c0-12-7-19-17-19s-17 7-17 19z" fill="${hair}"/>`;
-    return `
-      <svg viewBox="0 0 96 96" class="character__svg" role="img" aria-label="Profile character">
-        <defs>
-          <radialGradient id="${uid}Bg" cx="50%" cy="35%" r="75%">
-            <stop offset="0%" stop-color="#7db4ff" />
-            <stop offset="100%" stop-color="#2563eb" />
-          </radialGradient>
-          <linearGradient id="${uid}Skin" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#ffe2c4" />
-            <stop offset="100%" stop-color="#f4c79b" />
-          </linearGradient>
-        </defs>
-        <circle cx="48" cy="48" r="48" fill="url(#${uid}Bg)" />
-        <ellipse cx="48" cy="86" rx="30" ry="18" fill="#1e3a8a" opacity="0.55" />
-        <path d="M30 60h36v20a18 18 0 0 1-36 0z" fill="${collar}" />
-        <circle cx="48" cy="42" r="17" fill="url(#${uid}Skin)" />
-        ${hairShape}
-        <circle cx="42" cy="42" r="2.1" fill="#3b2a1a" />
-        <circle cx="54" cy="42" r="2.1" fill="#3b2a1a" />
-        <path d="M43 49q5 4 10 0" stroke="#c98a5e" stroke-width="2" fill="none" stroke-linecap="round" />
-        ${female ? '<circle cx="38" cy="48" r="2.4" fill="#f59ca0" opacity="0.5"/><circle cx="58" cy="48" r="2.4" fill="#f59ca0" opacity="0.5"/>' : ""}
-      </svg>`;
-  };
-
-  document.querySelectorAll("[data-character]").forEach((box) => {
-    const gender = (box.getAttribute("data-gender") || "male").toLowerCase();
-    box.insertAdjacentHTML("beforeend", buildAvatar(gender));
-  });
-
-  /* ---------------------------------------------------------
      1. Nav background once scrolled off the hero
      --------------------------------------------------------- */
   const nav = document.getElementById("nav");

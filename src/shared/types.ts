@@ -26,6 +26,7 @@ export type LinkedInProfile = {
   experience: ExperienceItem[];
   education: string[];
   certifications: string[];
+  projects: string[];
   skills: string[];
   activity: ActivityItem[];
   followers?: number;
@@ -61,6 +62,8 @@ export type ScoreResult = {
   value: number;
   confidence: number;
   factors: SignalFactor[];
+  // Plain-English explanation of the score (from the LLM when available).
+  reason?: string;
 };
 
 export type LinkedInScores = {
@@ -80,6 +83,22 @@ export type LlmInsight = {
   outreach: OutreachSuggestions;
   model: string;
   generatedAt: string;
+};
+
+// The model's own judgment of the profile, used to replace the keyword-rule
+// scores when the LLM is enabled. Scores are 0-100; reason is a one-line
+// justification grounded in the visible profile.
+export type LlmScore = {
+  score: number;
+  reason: string;
+};
+
+export type LlmProfileAssessment = {
+  decisionMaker: LlmScore;
+  founder: LlmScore;
+  hiringIntent: LlmScore;
+  skills: string[];
+  confidence: number;
 };
 
 export type AnalysisStatus = "idle" | "extracting" | "scoring" | "llm" | "complete" | "error";

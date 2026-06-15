@@ -480,26 +480,32 @@ a {
   padding: 14px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
-.character {
+/* Profile avatar: a circular monogram standing in for the real LinkedIn photo
+   that the extension now displays (the demo profile has no real photo). */
+.avatar {
   position: relative;
   flex: none;
   width: 54px;
   height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #60a5fa, #2563eb 60%, #1e3a8a);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.55);
 }
-.character__svg {
-  width: 100%;
-  height: 100%;
-  border-radius: 14px;
-  display: block;
-  position: relative;
-  z-index: 1;
-}
-.character__halo {
+.avatar::before {
+  content: "";
   position: absolute;
   inset: -8px;
   border-radius: 50%;
   background: radial-gradient(closest-side, rgba(96, 165, 250, 0.5), transparent);
-  z-index: 0;
+  z-index: -1;
+}
+.avatar__monogram {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
 }
 .panel__id h3 {
   margin: 0;

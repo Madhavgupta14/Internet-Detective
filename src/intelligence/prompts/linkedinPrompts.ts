@@ -27,6 +27,7 @@ function compactProfile(profile: LinkedInProfile) {
     })),
     education: profile.education.slice(0, 5),
     certifications: profile.certifications.slice(0, 6),
+    projects: profile.projects.slice(0, 6),
     skills: profile.skills.slice(0, 20),
     recentActivity: profile.activity.slice(0, 5).map((item) => item.text.slice(0, 360))
   };
@@ -60,23 +61,43 @@ export function buildLinkedInInsightPrompt(
 
   return `You are Spectra, a browser intelligence assistant.
 
-Use only the provided structured profile, signal evidence, and scores. Do not invent facts. If evidence is weak, say so plainly.
+Use only the provided structured profile. Do not invent facts. If evidence is weak, say so plainly.
 
 ${senderLine}
 
-Primary task:
-- Explain decision-maker, founder, and hiring intent in relation to the visible evidence.
-- For outreach, prioritize visible hiring scope and skillSignals.
-- If hiringScope is empty, do not imply that the person is hiring.
+You have two jobs: (A) score the profile, and (B) write outreach.
+
+== A. Scoring ==
+Assess the person from the profile alone and assign three integer scores from 0 to 100. The "Heuristic hints" block below is a rough keyword-based guess that is OFTEN WRONG for non-corporate roles (politicians, doctors, academics, artists, public figures) — treat it as a weak hint only and rely on your own judgment of the actual role, seniority, and evidence.
+
+Rubric:
+- decisionMaker: authority to make or strongly influence decisions in their domain — budget, hiring, strategy, org leadership, or public office. HIGH for founders, C-level/VP/director, partners, senior public officials (e.g. a head of government or minister), and widely-followed leaders. LOW for students, junior individual contributors, and people with no visible authority.
+- founder: likelihood the person founded, owns, or runs a company or venture. HIGH only with founder/owner/entrepreneur evidence in role, about, or experience. A senior employee who did not found anything is LOW.
+- hiringIntent: visible evidence the person is hiring or growing a team RIGHT NOW — active hiring posts, open roles, "we're hiring", recruiting language. Being senior does NOT imply hiring. With no hiring evidence, keep this LOW.
+
+Also derive "skills": the person's genuine professional skills and domains, inferred from THEIR role, experience, about, and posts. Do not output generic technology buzzwords that are not supported by the profile, and never attribute skills that belong to other people. Return an empty array if the profile does not support any.
+
+Set "confidence" (0-100) for how much visible evidence supported your scoring.
+
+== B. Outreach ==
+- For outreach, prioritize visible hiring scope and skills.
+- If there is no hiring evidence, do not imply that the person is hiring.
 - NEVER use placeholders: no [Your Name], [Name], [Your Role], [Your Company], [Position], [Company], bracketed text, or "your work/team/company/current work".
 - Do not mention profile data that is not present in the JSON.
 - Keep outreach natural, specific, and ready to paste into email or LinkedIn.
-- Personalize using the strongest available anchors: name, current role, current company, about text, hiring scope, skill signals, recent activity.
+- Personalize using the strongest available anchors: name, current role, current company, about text, recent activity.
 - Avoid generic compliments. Tie the reason for reaching out to one specific visible profile detail.
 - If visible evidence is thin, keep the message brief and honest rather than inventing context.
 
 Return strict JSON with this shape:
 {
+  "analysis": {
+    "decisionMaker": { "score": 0, "reason": "one or two plain-English sentences a non-expert can read, citing the specific profile evidence behind the score" },
+    "founder": { "score": 0, "reason": "one or two plain-English sentences citing specific evidence" },
+    "hiringIntent": { "score": 0, "reason": "one or two plain-English sentences citing specific evidence" },
+    "skills": ["specific skill or domain", "..."],
+    "confidence": 0
+  },
   "summary": "2-4 concise sentences. Start with the strongest signal, mention useful evidence, include a confidence caveat when evidence is limited.",
   "outreach": {
     "emailOpener": "a complete short cold email in 3-5 lines, with a subject line on its own line starting with Subject:, a greeting using the target's first name, one specific profile anchor, one clear reason to connect, and a soft CTA. Sign off with the sender name if known.",
@@ -92,14 +113,11 @@ Formatting rules:
 - Do not use markdown, bullets, or labels except "Subject:" inside emailOpener.
 - If there is not enough evidence for a field, say the visible profile data is insufficient — do not invent or use placeholders.
 
-Profile:
+Profile (your source of truth):
 ${JSON.stringify(compactProfile(profile), null, 2)}
 
-Signals:
-${JSON.stringify(compactSignals(signals), null, 2)}
-
-Scores:
-${JSON.stringify(scores, null, 2)}`;
+Heuristic hints (keyword-based, may be wrong — do not trust blindly):
+${JSON.stringify({ ...compactSignals(signals), keywordScores: scores }, null, 2)}`;
 }
 
 export function buildProfileOutreachPrompt({

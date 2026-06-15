@@ -235,6 +235,115 @@ textarea:focus-visible {
 }
 
 /* =========================================================
+   Stage-lit profile avatar: keep the round portrait, add a
+   little stage below it and two colour-shifting spotlights.
+   All pieces are absolutely positioned so the avatar's box
+   (and the surrounding flex row) never changes size.
+   ========================================================= */
+.avatar-stage {
+  position: relative;
+}
+
+/* the small elliptical stage / platform under the portrait */
+.avatar-stage__floor {
+  position: absolute;
+  left: 50%;
+  bottom: -13px;
+  width: 96px;
+  height: 26px;
+  transform: translateX(-50%) perspective(60px) rotateX(42deg);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.5), rgba(148, 163, 184, 0.16) 58%, transparent 76%);
+  box-shadow: 0 7px 13px rgba(15, 23, 42, 0.38);
+  pointer-events: none;
+}
+.avatar-stage__floor::after {
+  content: "";
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 34%;
+  height: 38%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.5), transparent 70%);
+  filter: blur(2px);
+}
+
+/* coloured light pool cast onto the stage floor (hue shifts) */
+.avatar-stage__pool {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  width: 74px;
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  color: #f0abfc;
+  background: radial-gradient(closest-side, currentColor, transparent 70%);
+  opacity: 0.35;
+  filter: blur(4px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* the two crossing spotlight beams */
+.avatar-stage__beam {
+  position: absolute;
+  top: -7px;
+  width: 58px;
+  height: 92px;
+  pointer-events: none;
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, currentColor 0%, transparent 72%);
+  opacity: 0.14;
+  filter: blur(3px);
+  mix-blend-mode: screen;
+  transform-origin: top center;
+}
+/* Beams sit just inside the top corners and tilt so their base swings toward
+   the centre (inward), aimed at the portrait — left leans right, right leans
+   left. */
+.avatar-stage__beam--left {
+  left: -6px;
+  transform: rotate(-24deg);
+  color: #67e8f9;
+}
+.avatar-stage__beam--right {
+  right: -6px;
+  transform: rotate(24deg);
+  color: #f0abfc;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .avatar-stage__beam--left {
+    animation: stage-hue-beam 7s linear infinite, stage-sweep-l 5.5s ease-in-out infinite;
+  }
+  .avatar-stage__beam--right {
+    animation: stage-hue-beam 7s linear infinite reverse, stage-sweep-r 5.5s ease-in-out infinite;
+  }
+  .avatar-stage__pool {
+    animation: stage-hue-pool 7s linear infinite;
+  }
+}
+
+@keyframes stage-hue-beam {
+  from { filter: hue-rotate(0deg) blur(3px); }
+  to { filter: hue-rotate(360deg) blur(3px); }
+}
+@keyframes stage-hue-pool {
+  from { filter: hue-rotate(0deg) blur(4px); }
+  to { filter: hue-rotate(360deg) blur(4px); }
+}
+@keyframes stage-sweep-l {
+  0%, 100% { transform: rotate(-27deg); }
+  50% { transform: rotate(-16deg); }
+}
+@keyframes stage-sweep-r {
+  0%, 100% { transform: rotate(27deg); }
+  50% { transform: rotate(16deg); }
+}
+
+/* =========================================================
    Playful zone creatures perched on each panel
    ========================================================= */
 .creature {

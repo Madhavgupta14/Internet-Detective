@@ -1,11 +1,11 @@
-import { AtSign, BriefcaseBusiness, ChevronDown, FileText, Loader2, LogOut, Mail, MessageSquare, RefreshCw, Search, Sparkles, Target, Upload, UserRound, X } from "lucide-react";
+import { Activity, AtSign, Award, BriefcaseBusiness, ChevronDown, FileText, FolderGit2, GraduationCap, Loader2, LogOut, Mail, MessageSquare, RefreshCw, Search, Sparkles, Target, Upload, UserRound, Wrench, X } from "lucide-react";
+import type { ComponentType } from "react";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { AuthState, EmailResult, LinkedInAnalysis, OutreachSuggestions, ScoreResult } from "../../shared/types";
+import type { AuthState, EmailResult, LinkedInAnalysis, LinkedInProfile, OutreachSuggestions, ScoreResult } from "../../shared/types";
 import type { EmailFinderResult } from "../../background/emailFinder";
 import "../shared/index.css";
 import { Button, CopyButton, EmptyState, StatusLine } from "../shared/components";
-import { ProfileCharacterFull } from "../shared/avatar";
 import { PanelScenery } from "../shared/scenery";
 import { sendMessage } from "../shared/runtime";
 import { parseResumeFile, summarizeResume, type ParsedResume } from "../../intelligence/resume/resumeParser";
@@ -53,12 +53,40 @@ function scoreMeaning(key: FocusKey, value: number): string {
   return band === "High" ? "Visible hiring motion." : band === "Medium" ? "Possible hiring context." : "No clear hiring scope.";
 }
 
-function ProfileAvatar({ name }: { name: string }) {
+function initialsFor(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const first = parts[0][0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] ?? "" : "";
+  return (first + last).toUpperCase() || "?";
+}
+
+function ProfileAvatar({ name, photoUrl }: { name: string; photoUrl?: string }) {
+  const [broken, setBroken] = useState(false);
+  const showPhoto = Boolean(photoUrl) && !broken;
+
   return (
-    <div className="character-3d relative shrink-0" aria-hidden="true">
-      <div className="character-3d__float">
-        <ProfileCharacterFull name={name} height={188} />
-      </div>
+    <div className="avatar-stage relative shrink-0">
+      {/* stage platform + coloured light pool sit behind the portrait */}
+      <span className="avatar-stage__floor" aria-hidden="true" />
+      <span className="avatar-stage__pool" aria-hidden="true" />
+      <div className="absolute -inset-1.5 rounded-full bg-gradient-to-br from-brand-300/60 via-brand-500/40 to-brand-700/40 blur-md" aria-hidden="true" />
+      {showPhoto ? (
+        <img
+          alt={name || "Profile photo"}
+          className="relative h-20 w-20 rounded-full border-2 border-white/80 object-cover shadow-panel"
+          onError={() => setBroken(true)}
+          referrerPolicy="no-referrer"
+          src={photoUrl}
+        />
+      ) : (
+        <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/80 brand-gradient text-2xl font-bold tracking-wide text-white shadow-panel">
+          {initialsFor(name)}
+        </div>
+      )}
+      {/* crossing spotlight beams shine on top of the portrait */}
+      <span className="avatar-stage__beam avatar-stage__beam--left" aria-hidden="true" />
+      <span className="avatar-stage__beam avatar-stage__beam--right" aria-hidden="true" />
     </div>
   );
 }
@@ -102,7 +130,7 @@ function FocusPanel({ label, score }: { label: FocusKey; score: ScoreResult }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold">{meta.label}</h2>
-          <p className="mt-1 text-sm leading-5 text-ink/65">{scoreMeaning(label, score.value)}</p>
+          <p className="mt-1 text-sm leading-5 text-ink/65">{score.reason || scoreMeaning(label, score.value)}</p>
         </div>
         <div className="text-right">
           <div className="text-xl font-semibold tabular-nums">{score.value}/100</div>
@@ -110,26 +138,20 @@ function FocusPanel({ label, score }: { label: FocusKey; score: ScoreResult }) {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-2">
-        {usefulFactors.length > 0 ? (
-          usefulFactors.slice(0, 4).map((factor, index) => (
+      {usefulFactors.length > 0 ? (
+        <div className="mt-4 grid gap-2">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/45">Supporting evidence</h3>
+          {usefulFactors.slice(0, 4).map((factor, index) => (
             <details className="rounded-md border border-ink/10 bg-paper px-3 py-2" key={`${factor.label}-${factor.evidence}`} open={index === 0}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-ink">
                 <span>{factor.label}</span>
-                <span className="flex items-center gap-1 text-ink/45">
-                  +{factor.impact}
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </span>
+                <ChevronDown className="h-3.5 w-3.5 text-ink/45" />
               </summary>
               <p className="mt-2 text-xs leading-5 text-ink/60">{factor.evidence}</p>
             </details>
-          ))
-        ) : (
-          <div className="rounded-md border border-dashed border-ink/15 bg-paper px-3 py-3 text-xs leading-5 text-ink/55">
-            No strong evidence was found for this category.
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -150,6 +172,106 @@ function SignalList({ label, values, empty }: { label: string; values: string[];
         <p className="mt-2 text-xs leading-5 text-ink/55">{empty}</p>
       )}
     </div>
+  );
+}
+
+function firstSentence(text: string, max: number): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  const sentence = clean.split(/(?<=[.!?])\s/)[0] ?? clean;
+  const pick = sentence.length >= 40 ? sentence : clean;
+  return pick.length > max ? `${pick.slice(0, max).replace(/[\s,;:.\-]+$/, "")}…` : pick;
+}
+
+function BriefRow({
+  icon: Icon,
+  label,
+  value,
+  highlight
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="flex gap-2">
+      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${highlight ? "text-brand-600" : "text-signal"}`} />
+      <p className="text-xs leading-5 text-ink/75">
+        <span className="font-semibold text-brand-700">{label}: </span>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+// One concise, fully-visible crux of the profile — no truncated walls of text.
+function ExtractedProfile({ profile }: { profile: LinkedInProfile }) {
+  const nowValue = [profile.currentRole, profile.currentCompany].filter(Boolean).join(" at ") || profile.headline;
+  // Previous roles = experience after the current one, as "Title at Company (duration)".
+  const previous = profile.experience
+    .slice(profile.currentRole ? 1 : 0, 4)
+    .map((item) => [item.title, item.company].filter(Boolean).join(" at ") + (item.duration ? ` (${item.duration})` : ""))
+    .filter((line) => line.trim().length > 1);
+  const bio = profile.about ? firstSentence(profile.about, 220) : "";
+  const posts = profile.activity.map((item) => item.text).filter(Boolean).slice(0, 6);
+
+  const hasAny =
+    Boolean(nowValue || bio) ||
+    previous.length > 0 ||
+    profile.education.length > 0 ||
+    profile.projects.length > 0 ||
+    profile.certifications.length > 0 ||
+    profile.skills.length > 0 ||
+    posts.length > 0;
+
+  return (
+    <details className="rounded-2xl border border-white/55 bg-white/80 p-4 shadow-panel backdrop-blur-md" open>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold">Profile summary</h2>
+        <ChevronDown className="h-4 w-4 text-ink/45" />
+      </summary>
+      {hasAny ? (
+        <div className="mt-3 space-y-2">
+          {bio ? <p className="text-xs italic leading-5 text-ink/70">{bio}</p> : null}
+          {nowValue ? <BriefRow icon={BriefcaseBusiness} label="Now" value={nowValue} /> : null}
+          {profile.education.length > 0 ? (
+            <BriefRow highlight icon={GraduationCap} label="Education" value={profile.education.slice(0, 3).join(" • ")} />
+          ) : null}
+          {previous.length > 0 ? <BriefRow icon={Activity} label="Experience" value={previous.join(" · ")} /> : null}
+          {profile.projects.length > 0 ? (
+            <BriefRow highlight icon={FolderGit2} label="Projects" value={profile.projects.slice(0, 5).join("; ")} />
+          ) : null}
+          {profile.certifications.length > 0 ? (
+            <BriefRow highlight icon={Award} label="Certifications" value={profile.certifications.slice(0, 12).join(", ")} />
+          ) : null}
+          {profile.skills.length > 0 ? (
+            <BriefRow icon={Wrench} label="Skills" value={profile.skills.slice(0, 12).join(", ")} />
+          ) : null}
+
+          {posts.length > 0 ? (
+            <div className="mt-1 border-t border-ink/10 pt-2">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 shrink-0 text-signal" />
+                <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-ink/70">Recent posts</h3>
+                <span className="ml-auto rounded-full bg-ink/5 px-1.5 text-[10px] font-semibold text-ink/45">{posts.length}</span>
+              </div>
+              <ul className="mt-2 space-y-1.5">
+                {posts.map((post) => (
+                  <li className="flex gap-1.5 text-xs leading-5 text-ink/70" key={post}>
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                    <span>{post}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <p className="mt-3 text-xs leading-5 text-ink/55">
+          Nothing was extracted from this page yet. Open a full LinkedIn profile and run Analyze.
+        </p>
+      )}
+    </details>
   );
 }
 
@@ -447,10 +569,15 @@ function EmailFinderPanel({
   const usingOwnKey = Boolean(auth?.usingOwnKey);
   const signedIn = Boolean(auth?.user);
   const unlocked = signedIn || usingOwnKey;
+  const hasCompany = Boolean(domain);
 
   async function find() {
     if (!unlocked) {
       onSignIn();
+      return;
+    }
+    if (!hasCompany) {
+      setError("No company was identified for this person, so a work email can't be looked up.");
       return;
     }
     setLoading(true);
@@ -494,11 +621,17 @@ function EmailFinderPanel({
 
       {results === null && !error && (
         <p className="mt-3 text-xs leading-5 text-ink/50">
-          Finds the most likely email for <span className="font-medium text-ink/70">{name}</span> at{" "}
-          <span className="font-medium text-ink/70">{domain}</span>.{" "}
-          {usingOwnKey
-            ? "Using your own Hunter.io API key (unlimited)."
-            : "Sign in with Google for free verified lookups, or add your own Hunter.io API key in Settings for unlimited results."}
+          {hasCompany ? (
+            <>
+              Finds the most likely email for <span className="font-medium text-ink/70">{name}</span> at{" "}
+              <span className="font-medium text-ink/70">{domain}</span>.{" "}
+              {usingOwnKey
+                ? "Using your own Hunter.io API key (unlimited)."
+                : "Sign in with Google for free verified lookups, or add your own Hunter.io API key in Settings for unlimited results."}
+            </>
+          ) : (
+            <>No company was identified for {name || "this profile"}, so a work email can&apos;t be looked up. Re-run Analyze on a full profile that lists a current role.</>
+          )}
         </p>
       )}
 
@@ -679,7 +812,7 @@ function SidePanel() {
         <div className="relative z-10 space-y-4 px-4 pb-8">
           <section className="relative px-1 pt-1 pb-2">
             <div className="flex items-center gap-3">
-              <ProfileAvatar name={analysis.profile.name} />
+              <ProfileAvatar name={analysis.profile.name} photoUrl={analysis.profile.photoUrl} />
               <div className="grid flex-1 gap-2">
                 <ScoreRow active={focus === "decisionMaker"} label="decisionMaker" onClick={() => setFocus("decisionMaker")} score={analysis.scores.decisionMaker} />
                 <ScoreRow active={focus === "founder"} label="founder" onClick={() => setFocus("founder")} score={analysis.scores.founder} />
@@ -716,6 +849,8 @@ function SidePanel() {
                 />
               </div>
             </section>
+
+          <ExtractedProfile profile={analysis.profile} />
 
           <details className="rounded-2xl border border-white/55 bg-white/80 p-4 shadow-panel backdrop-blur-md">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3">

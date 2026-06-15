@@ -1,5 +1,5 @@
 import { DEFAULT_SETTINGS, HOSTED_MODEL } from "../shared/constants";
-import type { AppSettings, LlmInsight, LinkedInProfile, LinkedInScores, LinkedInSignals } from "../shared/types";
+import type { AppSettings, LlmInsight, LlmProfileAssessment, LlmScore, LinkedInProfile, LinkedInScores, LinkedInSignals } from "../shared/types";
 import { buildLinkedInInsightPrompt, buildProfileOutreachPrompt } from "../intelligence/prompts/linkedinPrompts";
 
 type OllamaGenerateResponse = {
@@ -163,7 +163,9 @@ async function assertOllamaResponse(response: Response): Promise<void> {
   throw new Error(`Ollama returned HTTP ${response.status}${detail ? `: ${detail}` : ""}.`);
 }
 
-function parseJsonResponse(text: string): { summary: string; outreach: LlmInsight["outreach"] } {
+// Pulls the first balanced-ish JSON object out of a model response, tolerating
+// code fences and surrounding prose.
+function firstJsonObject(text: string): Record<string, unknown> {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
   const candidate = fenced ?? text;
   const start = candidate.indexOf("{");
@@ -171,8 +173,54 @@ function parseJsonResponse(text: string): { summary: string; outreach: LlmInsigh
   if (start === -1 || end === -1) {
     throw new Error("The model response did not contain JSON.");
   }
+  return JSON.parse(candidate.slice(start, end + 1)) as Record<string, unknown>;
+}
 
-  const parsed = JSON.parse(candidate.slice(start, end + 1)) as {
+function clampScore(value: unknown): number {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) {
+    return 0;
+  }
+  return Math.round(Math.min(100, Math.max(0, n)));
+}
+
+function parseLlmScore(raw: unknown): LlmScore {
+  if (raw && typeof raw === "object") {
+    const obj = raw as { score?: unknown; reason?: unknown };
+    return {
+      score: clampScore(obj.score),
+      reason: typeof obj.reason === "string" ? obj.reason.trim().slice(0, 240) : ""
+    };
+  }
+  // Some models emit a bare number instead of { score, reason }.
+  return { score: clampScore(raw), reason: "" };
+}
+
+// Reads the optional "analysis" block the insight prompt asks for. Returns
+// undefined when absent or unusable so callers fall back to keyword scores.
+function parseAssessment(parsed: Record<string, unknown>): LlmProfileAssessment | undefined {
+  const analysis = parsed.analysis;
+  if (!analysis || typeof analysis !== "object") {
+    return undefined;
+  }
+  const obj = analysis as Record<string, unknown>;
+  if (!("decisionMaker" in obj) && !("founder" in obj) && !("hiringIntent" in obj)) {
+    return undefined;
+  }
+  const skills = Array.isArray(obj.skills)
+    ? obj.skills.map((skill) => (typeof skill === "string" ? skill.trim() : "")).filter(Boolean).slice(0, 20)
+    : [];
+  return {
+    decisionMaker: parseLlmScore(obj.decisionMaker),
+    founder: parseLlmScore(obj.founder),
+    hiringIntent: parseLlmScore(obj.hiringIntent),
+    skills,
+    confidence: clampScore(obj.confidence)
+  };
+}
+
+function parseJsonResponse(text: string): { summary: string; outreach: LlmInsight["outreach"] } {
+  const parsed = firstJsonObject(text) as {
     summary?: string;
     outreach?: Partial<LlmInsight["outreach"]>;
   };
@@ -258,15 +306,24 @@ export async function generateLinkedInInsight(
   signals: LinkedInSignals,
   scores: LinkedInScores,
   settings: AppSettings
-): Promise<LlmInsight> {
+): Promise<{ insight: LlmInsight; assessment?: LlmProfileAssessment }> {
   const prompt = buildLinkedInInsightPrompt(profile, signals, scores, settings.senderName || undefined, settings.senderRole || undefined);
-  const raw = await generateRaw(prompt, settings, { temperature: 0.2, maxTokens: 900 });
+  const raw = await generateRaw(prompt, settings, { temperature: 0.2, maxTokens: 1200 });
   const parsed = parseJsonResponse(raw);
+  let assessment: LlmProfileAssessment | undefined;
+  try {
+    assessment = parseAssessment(firstJsonObject(raw));
+  } catch {
+    assessment = undefined;
+  }
   return {
-    summary: parsed.summary,
-    outreach: parsed.outreach,
-    model: activeModelLabel(settings),
-    generatedAt: new Date().toISOString()
+    insight: {
+      summary: parsed.summary,
+      outreach: parsed.outreach,
+      model: activeModelLabel(settings),
+      generatedAt: new Date().toISOString()
+    },
+    assessment
   };
 }
 

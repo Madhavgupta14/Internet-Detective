@@ -42,11 +42,12 @@ export default async function handler(req, res) {
   }
 
   const domain = body && typeof body.domain === "string" ? body.domain.trim() : "";
+  const company = body && typeof body.company === "string" ? body.company.trim() : "";
   const firstName = body && typeof body.first_name === "string" ? body.first_name.trim() : "";
   const lastName = body && typeof body.last_name === "string" ? body.last_name.trim() : "";
 
-  if (!domain || !firstName || !lastName) {
-    res.status(400).json({ error: "Provide domain, first_name, and last_name." });
+  if ((!domain && !company) || !firstName || !lastName) {
+    res.status(400).json({ error: "Provide company (or domain), first_name, and last_name." });
     return;
   }
 
@@ -68,11 +69,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  const url =
-    `${HUNTER_URL}?domain=${encodeURIComponent(domain)}` +
-    `&first_name=${encodeURIComponent(firstName)}` +
-    `&last_name=${encodeURIComponent(lastName)}` +
-    `&api_key=${encodeURIComponent(apiKey)}`;
+  // Prefer the company name — Hunter resolves it to the real corporate domain,
+  // which is far more accurate than a domain guessed from the company string.
+  const params = new URLSearchParams({ first_name: firstName, last_name: lastName, api_key: apiKey });
+  if (company) {
+    params.set("company", company);
+  } else {
+    params.set("domain", domain);
+  }
+  const url = `${HUNTER_URL}?${params.toString()}`;
 
   let hunterRes;
   let data;

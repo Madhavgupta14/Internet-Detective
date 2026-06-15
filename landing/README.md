@@ -68,11 +68,9 @@ Two things are meant to be edited as the product ships — both live at the top 
   const CONFIG = { storeUrl: "https://chromewebstore.google.com/detail/…" };
   ```
 
-- **Character avatar** — the hero panel avatar is gender-aware and data-driven. Set
-  `data-gender="male"` or `data-gender="female"` on the `[data-character]` element in
-  `index.html`; `main.js` renders the matching stylized SVG. This is a stand-in for the planned
-  3D Pixar-style render — when the real renders exist, drop them into `assets/` and replace the
-  `buildAvatar()` call with an `<img>` swap keyed off the same `data-gender`.
+- **Profile avatar** — the hero panel uses a circular initials monogram (`.avatar` in
+  `index.html` / `styles.css`), mirroring the extension, which now shows the person's real
+  LinkedIn photo and falls back to an initials monogram when no photo is available.
 
 ## Notes
 

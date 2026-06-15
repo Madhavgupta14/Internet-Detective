@@ -5,6 +5,7 @@ import { checkOllama, generateLinkedInInsight, generateProfileOutreach } from ".
 import { fetchAccountCredits, findEmailsForAnalysis } from "./emailFinder";
 import { getAccessToken, getCurrentUser, signIn, signOut } from "./auth";
 import { deleteAllData, getLatestAnalysis, getOutreachPreferences, getSettings, saveAnalysis, saveOutreachPreferences, saveSettings } from "../storage/db";
+import { clamp } from "../shared/scoring";
 import type {
   AppMessage,
   AppSettings,
@@ -12,9 +13,13 @@ import type {
   GenerateProfileOutreachMessage,
   LinkedInAnalysis,
   LinkedInProfile,
+  LinkedInScores,
+  LlmProfileAssessment,
+  LlmScore,
   MessageResponse,
   OutreachPreferences,
-  ResumePayload
+  ResumePayload,
+  ScoreResult
 } from "../shared/types";
 
 async function buildAuthState(settings: AppSettings, token?: string | null): Promise<AuthState> {
@@ -103,6 +108,41 @@ async function extractFromTab(tab: chrome.tabs.Tab): Promise<LinkedInProfile> {
   }
 }
 
+// Turn one LLM score into the app's ScoreResult shape. The model's plain-English
+// reason becomes the headline explanation; the keyword factors stay as the
+// supporting evidence below it.
+function llmScoreToResult(llm: LlmScore, confidence: number, fallback: ScoreResult): ScoreResult {
+  return {
+    value: Math.round(clamp(llm.score)),
+    confidence: Math.round(clamp(confidence)) / 100,
+    factors: fallback.factors,
+    reason: llm.reason || undefined
+  };
+}
+
+// Overlay the model's own judgment onto the keyword baseline. The keyword
+// scores/skills remain in `base` as the fallback when no assessment is present.
+function applyAssessment(base: LinkedInAnalysis, assessment?: LlmProfileAssessment): LinkedInAnalysis {
+  if (!assessment) {
+    return base;
+  }
+  const confidence = assessment.confidence;
+  const scores: LinkedInScores = {
+    decisionMaker: llmScoreToResult(assessment.decisionMaker, confidence, base.scores.decisionMaker),
+    founder: llmScoreToResult(assessment.founder, confidence, base.scores.founder),
+    hiringIntent: llmScoreToResult(assessment.hiringIntent, confidence, base.scores.hiringIntent)
+  };
+  // Only override skills when the model actually produced some; otherwise keep
+  // whatever the extractor found.
+  const skills = assessment.skills.length > 0 ? assessment.skills : base.profile.skills;
+  return {
+    ...base,
+    profile: { ...base.profile, skills },
+    signals: { ...base.signals, skillSignals: skills.slice(0, 10) },
+    scores
+  };
+}
+
 export async function analyzeCurrentTab(): Promise<LinkedInAnalysis> {
   const tab = await activeTab();
   const profile = await extractFromTab(tab);
@@ -128,8 +168,8 @@ export async function analyzeCurrentTab(): Promise<LinkedInAnalysis> {
   }
 
   try {
-    const insight = await generateLinkedInInsight(profile, signals, scores, settings);
-    const completed = { ...baseAnalysis, insight, status: "complete" as const };
+    const { insight, assessment } = await generateLinkedInInsight(profile, signals, scores, settings);
+    const completed = applyAssessment({ ...baseAnalysis, insight, status: "complete" as const }, assessment);
     await saveAnalysis(completed);
     return completed;
   } catch (error) {

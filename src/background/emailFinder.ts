@@ -32,8 +32,11 @@ type HunterOutcome = {
 };
 
 // Direct Hunter call using the user's own key (no shared-quota cost, no limit).
-async function hunterEmailFinder(first: string, last: string, domain: string, apiKey: string): Promise<HunterOutcome> {
-  const url = `https://api.hunter.io/v2/email-finder?domain=${encodeURIComponent(domain)}&first_name=${encodeURIComponent(first)}&last_name=${encodeURIComponent(last)}&api_key=${encodeURIComponent(apiKey)}`;
+// We pass the company NAME (not a guessed domain) so Hunter resolves the real
+// corporate domain itself — guessed domains like "cadencedesignsystems.com" miss.
+async function hunterEmailFinder(first: string, last: string, company: string, apiKey: string): Promise<HunterOutcome> {
+  const params = new URLSearchParams({ company, first_name: first, last_name: last, api_key: apiKey });
+  const url = `https://api.hunter.io/v2/email-finder?${params.toString()}`;
   try {
     const res = await fetch(url);
     if (res.status === 429) return { results: [], exhausted: true };
@@ -49,13 +52,13 @@ async function hunterEmailFinder(first: string, last: string, domain: string, ap
 }
 
 // Shared lookup via the hosted proxy (key + per-account limit enforced server-side).
-async function hostedEmailFinder(first: string, last: string, domain: string, endpoint: string, token: string): Promise<HunterOutcome> {
+async function hostedEmailFinder(first: string, last: string, company: string, domain: string, endpoint: string, token: string): Promise<HunterOutcome> {
   const base = (endpoint || HOSTED_ENDPOINT).replace(/\/+$/, "");
   try {
     const res = await fetch(`${base}/api/find-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ domain, first_name: first, last_name: last })
+      body: JSON.stringify({ company, domain, first_name: first, last_name: last })
     });
     const data = (await res.json().catch(() => ({}))) as {
       email?: string | null;
@@ -118,20 +121,24 @@ export async function findEmailsForAnalysis(
   const nameParts = (analysis.profile.name ?? "").trim().split(/\s+/);
   const first = nameParts[0] ?? "";
   const last = nameParts[nameParts.length - 1] ?? "";
-  const company = analysis.profile.currentCompany ?? "";
-  const domain = guessDomain(company);
+  // currentCompany is already validated during extraction (no date ranges /
+  // durations), so an empty company here means we genuinely couldn't identify one.
+  const company = (analysis.profile.currentCompany ?? "").trim();
+  const domain = guessDomain(company); // only used to synthesize pattern guesses
 
   const ownKey = settings.hunterApiKey?.trim();
   let outcome: HunterOutcome = { results: [], exhausted: false };
 
-  if (ownKey && first && last && domain) {
-    outcome = await hunterEmailFinder(first, last, domain, ownKey);
-  } else if (options.token && first && last && domain) {
-    outcome = await hostedEmailFinder(first, last, domain, settings.apiEndpoint, options.token);
+  if (company && first && last) {
+    if (ownKey) {
+      outcome = await hunterEmailFinder(first, last, company, ownKey);
+    } else if (options.token) {
+      outcome = await hostedEmailFinder(first, last, company, domain, settings.apiEndpoint, options.token);
+    }
   }
 
   const results: EmailResult[] = [...outcome.results];
-  const patterns = emailPatterns(first, last, domain);
+  const patterns = company ? emailPatterns(first, last, domain) : [];
   const existingEmails = new Set(results.map((r) => r.email));
   for (const p of patterns) {
     if (!existingEmails.has(p.email)) results.push(p);
@@ -140,7 +147,7 @@ export async function findEmailsForAnalysis(
 
   return {
     name: analysis.profile.name,
-    domain,
+    domain: company || "",
     results: results.slice(0, 6),
     exhausted: outcome.exhausted,
     usesRemaining: outcome.usesRemaining,

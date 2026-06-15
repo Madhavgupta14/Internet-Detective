@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://spectra-sepia.vercel.app/</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://spectra-sepia.vercel.app/assets/icons/icon-128.png</image:loc>
+      <image:title>Spectra — LinkedIn Profile Intelligence Chrome Extension</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://spectra-sepia.vercel.app/privacy</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>

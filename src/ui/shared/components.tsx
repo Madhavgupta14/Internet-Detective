@@ -57,7 +57,7 @@ export function StatusLine({ status, error }: { status?: string; error?: string 
     return (
       <div className="flex items-center gap-2 text-sm text-signal">
         <Loader2 className="h-4 w-4 animate-spin" />
-        <span>Working locally</span>
+        <span>Scanning</span>
       </div>
     );
   }

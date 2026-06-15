@@ -122,17 +122,38 @@ function isLikelySkill(value: string): boolean {
   return /^[A-Za-z][A-Za-z0-9.+/&-]*(?:\s+[A-Za-z][A-Za-z0-9.+/&-]*){0,3}$/.test(clean);
 }
 
+// A readable window of context around the matched evidence. Snaps to word
+// boundaries (never cuts a word in half), drops a dangling partial first word,
+// strips activity time-markers like "1mo •", and adds a single trailing ellipsis.
 function evidenceSnippet(pattern: RegExp, text: string): string {
   const match = text.match(pattern);
-  if (!match?.index && match?.index !== 0) {
-    return text.slice(0, 180);
+  const idx = match?.index ?? -1;
+  if (idx < 0) {
+    return text.slice(0, 160).replace(/\s+/g, " ").trim();
   }
 
-  const start = Math.max(match.index - 70, 0);
-  const end = Math.min(match.index + match[0].length + 90, text.length);
-  const prefix = start > 0 ? "... " : "";
-  const suffix = end < text.length ? " ..." : "";
-  return `${prefix}${text.slice(start, end)}${suffix}`.replace(/\s+/g, " ").trim();
+  let start = Math.max(idx - 80, 0);
+  let end = Math.min(idx + match![0].length + 110, text.length);
+  // Snap start forward to the next word boundary, end back to the previous one.
+  if (start > 0) {
+    const nextSpace = text.indexOf(" ", start);
+    if (nextSpace !== -1 && nextSpace < idx) start = nextSpace + 1;
+  }
+  if (end < text.length) {
+    const prevSpace = text.lastIndexOf(" ", end);
+    if (prevSpace > idx) end = prevSpace;
+  }
+
+  let snippet = text
+    .slice(start, end)
+    .replace(/\b\d+\s*(?:h|d|w|mo|m|y|yr)\b\s*[•·-]?/gi, " ") // "1mo •" activity markers
+    .replace(/\s+/g, " ")
+    .trim();
+  // Drop a leading lowercase sentence fragment so it reads from a clean start.
+  snippet = snippet.replace(/^[a-z][^\s]*\s+/, "");
+  const prefix = start > 0 ? "… " : "";
+  const suffix = end < text.length ? " …" : "";
+  return `${prefix}${snippet}${suffix}`.trim();
 }
 
 function addFactor(factors: SignalFactor[], label: string, impact: number, evidence: string): void {
@@ -223,9 +244,27 @@ function extractHiringScope(text: string): string[] {
   return [...new Set(scopes.map((scope) => scope.toLowerCase()))].map((scope) => scope.replace(/\b\w/g, (char) => char.toUpperCase())).slice(0, 5);
 }
 
-function extractSkillSignals(profile: LinkedInProfile, text: string): string[] {
+// Only the target's own authored fields — NEVER rawTextSample, which is the
+// whole-page text and includes the "More profiles for you" sidebar, recommended
+// people, and job cards. Scanning that attributes other people's keywords to
+// the target (e.g. a politician's profile showing "AWS, Azure, DevOps").
+function authoredTextCorpus(profile: LinkedInProfile): string {
+  return [
+    profile.headline,
+    profile.currentRole,
+    profile.about,
+    profile.experience.map((item) => `${item.title} ${item.company} ${item.description ?? ""}`).join(" "),
+    profile.certifications.join(" "),
+    profile.education.join(" ")
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function extractSkillSignals(profile: LinkedInProfile): string[] {
+  const authored = authoredTextCorpus(profile);
   const fromProfile = profile.skills.filter((skill) => isLikelySkill(skill));
-  const fromText = skillKeywords.filter((skill) => new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(text));
+  const fromText = skillKeywords.filter((skill) => new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(authored));
   return [...new Set([...fromProfile, ...fromText].map((skill) => skill.trim()).filter(Boolean))].slice(0, 10);
 }
 
@@ -285,7 +324,7 @@ export function extractLinkedInSignals(profile: LinkedInProfile): LinkedInSignal
   }
 
   signals.hiringScope = extractHiringScope(fullText);
-  signals.skillSignals = extractSkillSignals(profile, fullText);
+  signals.skillSignals = extractSkillSignals(profile);
 
   // An explicit, active hiring post is the strongest possible hiring-intent evidence.
   const activeHiring =

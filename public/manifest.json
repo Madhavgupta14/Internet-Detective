@@ -50,6 +50,6 @@
     "https://internet-detective-proxy.vercel.app/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:11434 http://127.0.0.1:11434 https://api.hunter.io https://www.googleapis.com https://accounts.google.com https://internet-detective-proxy.vercel.app"
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' data: https://*.licdn.com https://media.licdn.com; connect-src 'self' http://localhost:11434 http://127.0.0.1:11434 https://api.hunter.io https://www.googleapis.com https://accounts.google.com https://internet-detective-proxy.vercel.app"
   }
 }
