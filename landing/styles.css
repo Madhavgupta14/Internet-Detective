@@ -440,12 +440,14 @@ a {
   background: #0a0e1a;
   box-shadow: 0 40px 90px -30px rgba(2, 6, 23, 0.7);
   overflow: hidden;
-  transform: translateY(0);
-  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+  /* Wide perspective keeps the 3D tilt looking good while minimizing the
+     foreshortening blur that a tight perspective caused. */
+  transform: perspective(2400px) rotateY(-8deg) rotateX(2.5deg);
+  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
   will-change: transform;
 }
 .panel:hover {
-  transform: translateY(-6px);
+  transform: perspective(2400px) rotateY(-2deg) rotateX(0.5deg);
 }
 .panel__shot {
   display: block;
