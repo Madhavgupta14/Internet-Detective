@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Spectra",
   "description": "Turn public LinkedIn profiles into structured intelligence and ready-to-send outreach.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsjGeY8kZGfu1CwYHxlVH6nIVrTzLEZzo7s5QR1SN5ZckqwSVpS6nPs7WZdQpo7sYbBxTWktj+GFlZMbLf1U4DuAtdUY2BdJ8N9iVnE8CtRPcXQ0BUypKCj4xTo8n32hkPg0MewIsiWh0P2AkmJvN8ht3aDPLBBdDs7ufu+viIgKa/ZNNLlmxPZRD4JkZ+t/JuUy1P4/TcCAdtgfbMKfbCysYeX5V8lsPt/N3/Sl6puBU6UIjb3IlIY/aXYfFj4HEH76k30t4HCWukNoVdeNd0kwZ+dS4BFn0XFDbrTD69myt0TRy4e+mxYbs8JLnlO5ObTkjqL+qS8QWIwI29A2e6QIDAQAB",
   "icons": {
     "16": "icons/icon-16.png",
