@@ -172,22 +172,29 @@
       vis.observe(heroSection);
     }
 
-    // occasional shooting star
-    const shoot = document.querySelector(".shooting-star");
-    if (shoot) {
+    // falling/shooting stars — several, each on its own randomized loop so a
+    // few are usually crossing; varied speeds but never too fast.
+    const shootStars = Array.from(document.querySelectorAll(".shooting-star"));
+    shootStars.forEach((shoot, idx) => {
       const fire = () => {
+        const dx = 50 + Math.random() * 34; // travel distance (vw)
+        const dy = 12 + Math.random() * 22; // how far it falls (vh)
+        const ang = 13 + Math.random() * 13; // streak angle (deg)
+        shoot.style.top = (4 + Math.random() * 40).toFixed(1) + "%"; // random start height
+        shoot.style.left = (-12 + Math.random() * 46).toFixed(1) + "%"; // random start across the sky
         shoot.animate(
           [
-            { opacity: 0, transform: "translate(0,0) rotate(18deg)" },
-            { opacity: 1, offset: 0.1 },
-            { opacity: 0, transform: "translate(70vw, 22vh) rotate(18deg)" },
+            { opacity: 0, transform: `translate(0,0) rotate(${ang}deg)` },
+            { opacity: 1, offset: 0.12 },
+            { opacity: 0, transform: `translate(${dx}vw, ${dy}vh) rotate(${ang}deg)` },
           ],
-          { duration: 1100, easing: "ease-out" }
+          { duration: 2700 + Math.random() * 1200, easing: "ease-out" } // slow, varied glide
         );
-        setTimeout(fire, 7000 + Math.random() * 9000);
+        setTimeout(fire, 3500 + Math.random() * 7000);
       };
-      setTimeout(fire, 3500);
-    }
+      // stagger each star's first appearance so they don't sync up
+      setTimeout(fire, 1500 + idx * 1800 + Math.random() * 2500);
+    });
   }
 
   /* ---------------------------------------------------------
@@ -302,6 +309,62 @@
         { threshold: 0.05 }
       );
       io.observe(coreSection);
+    }
+  }
+
+  /* ---------------------------------------------------------
+     9. Planes wandering across the sky — randomized, non-linear
+        flight path with a little vertical wander and banking.
+     --------------------------------------------------------- */
+  const planes = Array.from(document.querySelectorAll(".plane"));
+  if (planes.length) {
+    const skySection = document.getElementById("features");
+    let planesActive = false;
+
+    const flyPlane = (plane) => {
+      if (!planesActive) {
+        plane._flying = false;
+        return;
+      }
+      plane._flying = true;
+      const vw = window.innerWidth;
+      const peak = plane._peak || 0.9;
+      const wander = () => (Math.random() - 0.5) * 80; // vertical wobble (px)
+      const bank = () => (Math.random() - 0.5) * 7; // gentle roll (deg)
+      plane
+        .animate(
+          [
+            { transform: `translate(${-vw * 0.22}px, ${wander() / 2}px) rotate(${bank()}deg)`, opacity: 0 },
+            { opacity: peak, offset: 0.12 },
+            { transform: `translate(${vw * 0.35}px, ${wander()}px) rotate(${bank()}deg)`, offset: 0.4 },
+            { transform: `translate(${vw * 0.68}px, ${wander()}px) rotate(${bank()}deg)`, offset: 0.72 },
+            { opacity: peak, offset: 0.88 },
+            { transform: `translate(${vw * 1.22}px, ${wander() / 2}px) rotate(${bank()}deg)`, opacity: 0 },
+          ],
+          { duration: 27000 + Math.random() * 20000, easing: "ease-in-out" }
+        ).onfinish = () => flyPlane(plane);
+    };
+
+    const startPlanes = () => {
+      planes.forEach((p, i) => {
+        p._peak = i === 1 ? 0.6 : 0.92;
+        if (!p._flying) setTimeout(() => flyPlane(p), Math.random() * 9000);
+      });
+    };
+
+    if (skySection && "IntersectionObserver" in window) {
+      new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            planesActive = e.isIntersecting;
+            if (planesActive) startPlanes();
+          }
+        },
+        { threshold: 0 }
+      ).observe(skySection);
+    } else {
+      planesActive = true;
+      startPlanes();
     }
   }
 })();

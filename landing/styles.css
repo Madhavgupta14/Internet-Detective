@@ -760,6 +760,7 @@ a {
   background: rgba(255, 255, 255, 0.92);
   border-radius: 2px 7px 7px 2px;
   filter: blur(0.5px) drop-shadow(0 2px 3px rgba(20, 40, 90, 0.22));
+  opacity: 0; /* JS fades/animates the planes along a wandering path */
 }
 .plane::before {
   /* swept wing */
@@ -786,13 +787,8 @@ a {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5));
   border-radius: 999px;
 }
-.plane--1 { top: 20%; opacity: 0.9; animation: fly 30s linear infinite; }
-.plane--2 { top: 52%; opacity: 0.55; scale: 0.72; animation: fly 46s linear infinite -18s; }
-
-@keyframes fly {
-  from { transform: translateX(-20vw); }
-  to { transform: translateX(122vw); }
-}
+.plane--1 { top: 20%; }
+.plane--2 { top: 52%; scale: 0.72; }
 
 /* =========================================================
    HOW IT WORKS (land + grass)
