@@ -749,6 +749,51 @@ a {
   to { transform: translateX(120vw); }
 }
 
+/* ---- planes crossing the sky ---- */
+.plane {
+  position: absolute;
+  left: 0;
+  z-index: 0;
+  width: 22px;
+  height: 6px;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 2px 7px 7px 2px;
+  filter: blur(0.5px) drop-shadow(0 2px 3px rgba(20, 40, 90, 0.22));
+}
+.plane::before {
+  /* swept wing */
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  width: 8px;
+  height: 15px;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.82);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  filter: blur(0.5px);
+}
+.plane::after {
+  /* contrail */
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: 90px;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5));
+  border-radius: 999px;
+}
+.plane--1 { top: 20%; opacity: 0.9; animation: fly 30s linear infinite; }
+.plane--2 { top: 52%; opacity: 0.55; scale: 0.72; animation: fly 46s linear infinite -18s; }
+
+@keyframes fly {
+  from { transform: translateX(-20vw); }
+  to { transform: translateX(122vw); }
+}
+
 /* =========================================================
    HOW IT WORKS (land + grass)
    ========================================================= */
@@ -912,6 +957,47 @@ a {
   75% { transform: translateX(12px) scaleY(0.85) rotate(2deg); }
 }
 
+/* blurry bones buried near the soil → core transition */
+.bones {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.bone {
+  --bone-col: rgba(233, 225, 206, 0.5);
+  position: absolute;
+  width: 40px;
+  height: 9px;
+  background: var(--bone-col);
+  border-radius: 999px;
+  filter: blur(1.6px);
+  opacity: 0.4;
+  transform: rotate(var(--rot, 0deg));
+}
+.bone::before,
+.bone::after {
+  /* two knobs at each end make the dog-bone shape */
+  content: "";
+  position: absolute;
+  top: -3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bone-col);
+  box-shadow: 0 11px 0 var(--bone-col);
+}
+.bone::before { left: -5px; }
+.bone::after { right: -5px; }
+.bone--1 { bottom: 15%; left: 12%; --rot: -18deg; animation: bone-float 13s ease-in-out infinite; }
+.bone--2 { bottom: 8%; right: 15%; --rot: 22deg; opacity: 0.3; animation: bone-float 16s ease-in-out infinite -5s; }
+.bone--3 { bottom: 24%; left: 58%; --rot: 7deg; width: 30px; opacity: 0.26; animation: bone-float 19s ease-in-out infinite -9s; }
+
+@keyframes bone-float {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-7px) rotate(var(--rot, 0deg)); }
+}
+
 .roots {
   position: absolute;
   top: 0;
@@ -1064,6 +1150,8 @@ a {
     scroll-behavior: auto;
   }
   .cloud,
+  .plane,
+  .bone,
   .worm,
   .core-glow,
   .leaf,

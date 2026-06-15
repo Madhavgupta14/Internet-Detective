@@ -6,7 +6,7 @@
     <title>Spectra — LinkedIn Profile Intelligence &amp; Outreach Chrome Extension</title>
     <meta
       name="description"
-      content="Spectra is a free Chrome extension that turns any public LinkedIn profile into structured intelligence — decision-maker, founder, and hiring-intent scores — plus ready-to-send, resume-aware outreach and a work-email finder. Scoring runs locally in your browser. No tracking."
+      content="Spectra is a free Chrome extension that uses AI to turn any public LinkedIn profile into decision-maker, founder, and hiring-intent scores with plain-English reasoning — plus resume-aware outreach and a work-email finder. Run the analysis hosted or fully offline. No tracking."
     />
     <meta
       name="keywords"
@@ -29,7 +29,7 @@
     <meta property="og:title" content="Spectra — LinkedIn Profile Intelligence &amp; Outreach" />
     <meta
       property="og:description"
-      content="Read the signal in any LinkedIn profile — decision-maker, founder, and hiring-intent scores — then reach out with words that land. Free Chrome extension, local-first, no tracking."
+      content="Read the signal in any LinkedIn profile — AI-graded decision-maker, founder, and hiring-intent scores — then reach out with words that land. Free Chrome extension, hosted or fully offline, no tracking."
     />
     <meta property="og:image" content="https://spectra-sepia.vercel.app/assets/icons/icon-128.png" />
     <meta property="og:image:alt" content="Spectra logo" />
@@ -39,7 +39,7 @@
     <meta name="twitter:title" content="Spectra — LinkedIn Profile Intelligence &amp; Outreach" />
     <meta
       name="twitter:description"
-      content="Turn any public LinkedIn profile into structured intelligence and ready-to-send outreach. Free Chrome extension, local-first, no tracking."
+      content="Turn any public LinkedIn profile into AI-graded intelligence and ready-to-send outreach. Free Chrome extension, hosted or fully offline, no tracking."
     />
     <meta name="twitter:image" content="https://spectra-sepia.vercel.app/assets/icons/icon-128.png" />
 
@@ -66,11 +66,11 @@
         "operatingSystem": "Chrome",
         "url": "https://spectra-sepia.vercel.app/",
         "downloadUrl": "https://chromewebstore.google.com/detail/edkadnjfnonjncinjjeohgfloagdlnba",
-        "description": "Spectra is a free Chrome extension that turns any public LinkedIn profile into structured intelligence — decision-maker, founder, and hiring-intent scores — plus ready-to-send, resume-aware outreach and a work-email finder. Scoring runs locally in the browser with no tracking.",
+        "description": "Spectra is a free Chrome extension that uses AI to turn any public LinkedIn profile into decision-maker, founder, and hiring-intent scores with plain-English reasoning — plus resume-aware outreach and a work-email finder. Analysis runs hosted or fully offline via Ollama, with no tracking.",
         "image": "https://spectra-sepia.vercel.app/assets/icons/icon-128.png",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "featureList": [
-          "Local-first LinkedIn profile scoring",
+          "AI-powered LinkedIn profile scoring with plain-English reasoning",
           "Decision-maker, founder, and hiring-intent signals",
           "Resume-aware outreach generation",
           "Work-email finder with optional Hunter.io verification"
@@ -87,7 +87,7 @@
             "name": "What does the Spectra Chrome extension do?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Spectra reads any public LinkedIn profile and scores it for decision-making authority, founder signal, and hiring intent, then drafts resume-aware outreach and surfaces the most likely work email. All scoring runs locally in your browser."
+              "text": "Spectra reads any public LinkedIn profile and uses an AI model to score it for decision-making authority, founder signal, and hiring intent — with a plain-English reason for each score — then drafts resume-aware outreach and surfaces the most likely work email. Reading the page happens locally; the analysis runs on a hosted model by default or fully offline with Ollama."
             }
           },
           {
@@ -95,7 +95,7 @@
             "name": "Is Spectra free and private?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. Spectra is free to install. Profile scoring runs entirely in your browser with no analytics or tracking, and your data stays in local storage on your device."
+              "text": "Yes. Spectra is free to install, ships with no analytics or tracking, and keeps your data in local storage on your device. Reading the profile happens locally; the AI analysis runs on a hosted model by default, or fully offline with Ollama so nothing leaves your machine."
             }
           },
           {
@@ -116,7 +116,7 @@
         "name": "Spectra",
         "alternateName": "Spectra — LinkedIn Profile Intelligence",
         "url": "https://spectra-sepia.vercel.app/",
-        "description": "Spectra is a free, local-first Chrome extension that scores any public LinkedIn profile for decision-maker, founder, and hiring intent and drafts resume-aware outreach."
+        "description": "Spectra is a free Chrome extension that uses AI to score any public LinkedIn profile for decision-maker, founder, and hiring intent and drafts resume-aware outreach."
       }
     </script>
     <script type="application/ld+json">
@@ -174,17 +174,17 @@
               from the <span class="grad">surface to the core</span>.
             </h1>
             <p class="hero__sub">
-              Spectra turns any public LinkedIn profile into structured intelligence and
-              ready-to-send outreach. The scoring runs locally in your browser — no account
-              required, no tracking, ever.
+              Spectra reads any public LinkedIn profile and uses AI to score decision power,
+              founder signal, and hiring intent - then drafts outreach grounded in the evidence.
+              No account required, no tracking, ever.
             </p>
             <div class="hero__actions">
               <a class="btn btn--primary btn--lg" href="#cta" data-install>Add to Chrome — it's free</a>
               <a class="btn btn--ghost btn--lg" href="#how">See how it works</a>
             </div>
             <p class="hero__trust">
-              <span class="dot"></span> Local-first scoring · Hosted or fully-private LLM · Zero
-              analytics
+              <span class="dot"></span> AI-powered analysis · Hosted or fully-private (Ollama) ·
+              Zero tracking
             </p>
           </div>
 
@@ -215,11 +215,13 @@
           <span class="cloud cloud--2"></span>
           <span class="cloud cloud--3"></span>
           <span class="cloud cloud--4"></span>
+          <span class="plane plane--1"></span>
+          <span class="plane plane--2"></span>
         </div>
 
         <div class="wrap">
-          <header class="sec-head reveal">
-            <span class="eyebrow eyebrow--dark">What Spectra does</span>
+          <header class="sec-head sec-head--light reveal">
+            <span class="eyebrow">What Spectra does</span>
             <h2>Three layers of signal, one click.</h2>
             <p>
               Every profile is read top-down — who they are, how to reach them, and where to send
@@ -234,14 +236,14 @@
               </div>
               <h3>Analyze</h3>
               <p>
-                Deterministic scoring runs locally and grades the profile across decision power,
-                founder signal, and hiring intent — each backed by the exact lines of evidence it
-                pulled from the page.
+                An AI model reads the whole profile and grades decision power, founder signal, and
+                hiring intent — adapting to any role, from a startup founder to a public figure —
+                with a plain-English reason behind every score.
               </p>
               <ul class="feature__list">
-                <li>Runs in the browser, always</li>
-                <li>Evidence you can click into</li>
-                <li>No profile leaves your machine for scoring</li>
+                <li>Reads the full profile, not keywords</li>
+                <li>A clear reason behind every score</li>
+                <li>Works for any role or seniority</li>
               </ul>
             </article>
 
@@ -305,7 +307,7 @@
             <li class="step reveal">
               <span class="step__n">02</span>
               <h3>Read the signal</h3>
-              <p>Local scoring grades the profile and shows the evidence behind every number.</p>
+              <p>AI grades the profile and explains the reasoning behind every score.</p>
             </li>
             <li class="step reveal">
               <span class="step__n">03</span>
@@ -329,28 +331,33 @@
           <span class="worm worm--3"></span>
         </div>
         <div class="roots" aria-hidden="true"></div>
+        <div class="bones" aria-hidden="true">
+          <span class="bone bone--1"></span>
+          <span class="bone bone--2"></span>
+          <span class="bone bone--3"></span>
+        </div>
 
         <div class="wrap">
           <header class="sec-head sec-head--light reveal">
             <span class="eyebrow eyebrow--light">Privacy by architecture</span>
-            <h2>The scoring never leaves your browser.</h2>
+            <h2>You choose where the analysis runs.</h2>
             <p>
-              Spectra is local-first by design. Deterministic extraction and scoring always run in
-              the extension. Written insight is the only thing that can touch an LLM — and you choose
-              which one.
+              Spectra reads the page locally and keeps your data on your device. The AI analysis
+              runs on a hosted model by default, or fully offline on your own machine with Ollama —
+              your call, and there is no tracking either way.
             </p>
           </header>
 
           <div class="privacy">
             <div class="priv-card reveal">
-              <h3>Local scoring, always</h3>
-              <p>Signal extraction and grading run entirely in the browser. No profile is sent anywhere to be scored.</p>
+              <h3>Local extraction</h3>
+              <p>Reading the profile into structured data happens entirely in your browser — nothing is scraped to a server.</p>
             </div>
             <div class="priv-card reveal">
               <h3>You pick the brain</h3>
               <p>
-                Use the hosted endpoint for zero-setup quality, or point Spectra at a local Ollama
-                model for fully-private generation that never leaves your machine.
+                Use the hosted model for zero-setup quality, or point Spectra at a local Ollama
+                model so analysis and outreach never leave your machine.
               </p>
             </div>
             <div class="priv-card reveal">
@@ -376,7 +383,7 @@
             <h2>You've reached the core.</h2>
             <p>
               Every LinkedIn profile is hiding structure. Spectra surfaces it, grounds your outreach
-              in it, and keeps the whole thing on your machine.
+              in it, and keeps your data on your device — no tracking.
             </p>
             <div class="cta__actions">
               <a class="btn btn--primary btn--lg" href="#top" data-install>Add Spectra to Chrome</a>
@@ -397,7 +404,7 @@
               <a href="#how">How it works</a>
               <a href="#privacy">Privacy</a>
             </nav>
-            <p class="footer__copy">© <span id="year">2026</span> Spectra. Local-first. No tracking.</p>
+            <p class="footer__copy">© <span id="year">2026</span> Spectra. Hosted or fully offline. No tracking.</p>
           </div>
         </footer>
       </section>
