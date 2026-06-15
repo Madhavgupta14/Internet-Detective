@@ -827,8 +827,12 @@ function SidePanel() {
               <span>{analysis.profile.extractionConfidence}% extracted</span>
               <span aria-hidden="true">·</span>
               <span>{analysis.signals.evidence.length} signals</span>
-              <span aria-hidden="true">·</span>
-              <span className="truncate normal-case tracking-normal">{analysis.insight?.model ?? "local"}</span>
+              {analysis.insight && analysis.insight.model !== "Local template" ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="truncate normal-case tracking-normal">{analysis.insight.model}</span>
+                </>
+              ) : null}
             </div>
           </section>
 

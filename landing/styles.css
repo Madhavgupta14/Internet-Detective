@@ -437,15 +437,20 @@ a {
    ========================================================= */
 .panel {
   border-radius: 18px;
-  background: #f4f6fb;
-  box-shadow: 0 40px 90px -30px rgba(2, 6, 23, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: #0a0e1a;
+  box-shadow: 0 40px 90px -30px rgba(2, 6, 23, 0.7);
   overflow: hidden;
-  transform: perspective(1400px) rotateY(-9deg) rotateX(3deg);
-  transition: transform 0.5s var(--ease);
+  transform: translateY(0);
+  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
   will-change: transform;
 }
 .panel:hover {
-  transform: perspective(1400px) rotateY(-3deg) rotateX(1deg);
+  transform: translateY(-6px);
+}
+.panel__shot {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .panel__chrome {
   display: flex;

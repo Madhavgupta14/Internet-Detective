@@ -304,12 +304,12 @@ textarea:focus-visible {
    the centre (inward), aimed at the portrait — left leans right, right leans
    left. */
 .avatar-stage__beam--left {
-  left: -6px;
+  left: -30px;
   transform: rotate(-24deg);
   color: #67e8f9;
 }
 .avatar-stage__beam--right {
-  right: -6px;
+  right: -30px;
   transform: rotate(24deg);
   color: #f0abfc;
 }
