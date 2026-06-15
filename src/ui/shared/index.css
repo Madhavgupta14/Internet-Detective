@@ -289,13 +289,13 @@ textarea:focus-visible {
 /* the two crossing spotlight beams */
 .avatar-stage__beam {
   position: absolute;
-  top: -7px;
-  width: 58px;
+  top: -14px;
+  width: 85px;
   height: 92px;
   pointer-events: none;
   clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
   background: linear-gradient(180deg, currentColor 0%, transparent 72%);
-  opacity: 0.14;
+  opacity: 0.2;
   filter: blur(3px);
   mix-blend-mode: screen;
   transform-origin: top center;
